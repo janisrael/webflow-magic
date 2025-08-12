@@ -91,15 +91,12 @@ def convert():
     theme_name = request.form.get('theme_name', 'converted-theme')
     webflow_zip = request.files.get('webflow_zip')
     screenshot_file = request.files.get("screenshot")
-    include_cms = request.form.get('enable_cms') == 'on'  # Fix: get actual checkbox value
+    include_cms = True
     api_token = request.form.get('api_token', 'a0c4e41f662c0fa945996569e7e9ded64e0c6fd66bca66176e020e2df3910a6a')
     site_id = request.form.get('site_id')
-    custom_selectors = request.form.get('custom_selectors', '')  # Get custom selectors
     
-    print(f"CMS enabled: {include_cms}, API Token: {api_token}, Site ID: {site_id}")
-    print(f"Custom selectors: {custom_selectors}")
+    print(f"tokennnn {include_cms} {api_token} {site_id}")
     print(f"Received screenshot_file: {screenshot_file}")
-    
     if not webflow_zip:
         return jsonify({"error": "Missing Webflow ZIP"}), 400
 
@@ -152,15 +149,8 @@ def convert():
         dest = os.path.join(output_theme, folder)
         if os.path.exists(src):
             shutil.copytree(src, dest, dirs_exist_ok=True)
-
-    # Process CMS if requested (BEFORE HTML processing so we have CMS data available)
-    cms_data = None
-    if include_cms and api_token and site_id:
-        cms_data = fetch_webflow_cms(api_token, site_id)
-    else:
-        cms_data = extract_webflow_collections(temp_dir)
     
-    # Process HTML files with CMS injection
+    # Process HTML files
     for filename in os.listdir(temp_dir):
         if not filename.endswith('.html'):
             continue
@@ -182,10 +172,6 @@ def convert():
             head.insert(0, cdn_jquery)
             head.append(splide_css)
             head.append(splide_js)
-
-        # INJECT CMS CONTENT HERE with custom selectors
-        if cms_data and include_cms:
-            soup = inject_cms_content(soup, cms_data, custom_selectors)
 
         body = soup.find('body')
         if body:
@@ -219,6 +205,14 @@ def convert():
             f.write(override_css)
 
     update_style_css_with_theme_name(output_theme, theme_name)
+
+    # Process CMS if requested
+    cms_data = None
+
+    if include_cms and api_token and site_id:
+        cms_data = fetch_webflow_cms(api_token, site_id)
+    else:
+        cms_data = extract_webflow_collections(temp_dir)
 
     if cms_data:
         # Save raw CMS data
@@ -267,13 +261,47 @@ def convert():
             # Add files with proper relative paths
             zipf.write(plugin_file_path, 'webflow-importer/webflow-importer.php')
             zipf.write(readme_path, 'webflow-importer/readme.txt')
+            
+            # If you have additional files (like readme.txt), add them like this:
+            # readme_path = os.path.join(plugin_dir, 'readme.txt')
+            # if os.path.exists(readme_path):
+            #     zipf.write(readme_path, 'webflow-importer/readme.txt')
         
+        if not os.path.exists(importer_zip_path):
+            raise Exception(f"Failed to create ZIP at {importer_zip_path}")
+        
+        print(f"Successfully created:")
+        print(f"Created plugin at: {plugin_dir}")
+        print(f"Created ZIP archive at: {importer_zip_path}")
+
+        # Optional: Verify the ZIP was created
+        if os.path.exists(importer_zip_path):
+            print("ZIP verification: Success")
+        else:
+            print("ZIP verification: Failed")
+        
+        # Update readme with progress info
+        with open(os.path.join(plugin_dir, 'readme.txt'), 'w') as f:
+            f.write(f"=== {theme_name} Importer ===\n")
+            f.write("This plugin imports Webflow CMS content into WordPress.\n\n")
+            f.write("Features:\n")
+            f.write("- Automatic import on activation\n")
+            f.write("- Progress tracking during import\n")
+            f.write("- Detailed success/error reporting\n\n")
+            f.write("Requirements:\n")
+            f.write("1. Advanced Custom Fields PRO (recommended) or ACF Free\n")
+            f.write("2. WordPress 5.0 or newer\n\n")
+            f.write("Installation:\n")
+            f.write("1. Install and activate Advanced Custom Fields\n")
+            f.write("2. Upload and activate this plugin\n")
+            f.write("3. The import will run automatically\n")
+            f.write("4. Check admin notices for import results\n\n")
+            f.write("Troubleshooting:\n")
+            f.write("- If import doesn't run automatically, go to Tools > Webflow Import\n")
+            f.write("- Check error logs if you see any issues\n")
+
         print(f"Created separate importer zip at: {importer_zip_path}")
 
-    # IMPORTANT: Finalize WordPress theme BEFORE creating ZIP
-    finalize_wordpress_theme(output_theme, theme_name)
-
-    # NOW create the final ZIP with all changes included
     final_zip_path = os.path.join(temp_base, theme_name + ".zip")
     shutil.make_archive(final_zip_path.replace(".zip", ""), "zip", output_theme)
 
@@ -286,323 +314,6 @@ def convert():
     response.headers["X-Temp-Zip-Path"] = final_zip_path
 
     return response
-
-
-def inject_cms_content(soup, cms_data, custom_selectors=""):
-    """
-    Injects WordPress CMS queries into HTML where Webflow CMS content is detected
-    """
-    print("Starting CMS content injection...")
-    
-    # Create mapping of collection names to post types
-    collection_mapping = {}
-    for collection in cms_data:
-        collection_name = collection.get('name', collection.get('slug', ''))
-        post_type = 'webflow_' + sanitize_collection_name(collection_name)
-        collection_mapping[collection_name.lower()] = {
-            'post_type': post_type,
-            'fields': collection.get('fields', []),
-            'items': collection.get('items', [])
-        }
-    
-    # 1. Find and replace collection lists (with custom selectors)
-    soup = inject_collection_lists(soup, collection_mapping, custom_selectors)
-    
-    # 2. Find and replace individual CMS items
-    soup = inject_individual_items(soup, collection_mapping)
-    
-    # 3. Handle special cases like testimonials, reviews, etc.
-    soup = inject_special_collections(soup, collection_mapping)
-    
-    print("CMS content injection completed")
-    return soup
-
-
-def inject_collection_lists(soup, collection_mapping, custom_selectors=""):
-    """
-    Detects collection lists (like sliders, grids) and replaces with WordPress loops
-    """
-    # Default collection selectors
-    collection_selectors = [
-        '[data-collection]',  # Webflow collection wrapper
-        '.w-dyn-list',        # Webflow dynamic list
-        '.collection-list',   # Common class name
-        '.team-list',         # Team members
-        '.review-list',       # Reviews
-        '.testimonial-list',  # Testimonials
-        '.slider-wrapper',    # Sliders
-    ]
-    
-    # Add custom selectors from user input
-    if custom_selectors and custom_selectors.strip():
-        user_selectors = [
-            selector.strip() 
-            for selector in custom_selectors.strip().split('\n') 
-            if selector.strip()
-        ]
-        collection_selectors.extend(user_selectors)
-        print(f"Added {len(user_selectors)} custom selectors: {user_selectors}")
-    
-    print(f"Using collection selectors: {collection_selectors}")
-    
-    for selector in collection_selectors:
-        try:
-            elements = soup.select(selector)
-            print(f"Found {len(elements)} elements for selector: {selector}")
-            
-            for element in elements:
-                # Try to determine which collection this represents
-                collection_info = detect_collection_type(element, collection_mapping)
-                if collection_info:
-                    # Replace with WordPress query loop
-                    wp_loop = generate_wordpress_loop(collection_info, element)
-                    if wp_loop:
-                        new_element = BeautifulSoup(wp_loop, 'html.parser')
-                        element.replace_with(new_element)
-                        print(f"Replaced collection list for: {collection_info['name']} using selector: {selector}")
-                else:
-                    print(f"Could not determine collection type for element with selector: {selector}")
-        except Exception as e:
-            print(f"Error processing selector '{selector}': {str(e)}")
-            continue
-    
-    return soup
-
-
-def generate_wordpress_loop(collection_info, original_element):
-    """
-    Generate WordPress query loop for a collection
-    """
-    # Get the first item template from the original element
-    item_template = original_element.find(class_=re.compile(r'.*item.*|.*card.*'))
-    if not item_template:
-        item_template = original_element.find('div')
-    
-    if not item_template:
-        return None
-    
-    return f"""
-    <?php
-    $query = new WP_Query(array(
-        'post_type' => '{collection_info["post_type"]}',
-        'posts_per_page' => -1,
-        'post_status' => 'publish'
-    ));
-    if ($query->have_posts()) :
-        while ($query->have_posts()) : $query->the_post();
-    ?>
-    {str(item_template)}
-    <?php
-        endwhile;
-        wp_reset_postdata();
-    endif;
-    ?>
-    """
-
-
-def detect_field_mapping(element, collection_mapping):
-    """
-    Try to map an HTML element to a CMS field
-    """
-    # Simple mapping based on common patterns
-    if element.name == 'img':
-        return {'type': 'image', 'field': 'main-image'}
-    elif element.name in ['h1', 'h2', 'h3'] or 'heading' in ' '.join(element.get('class', [])):
-        return {'type': 'text', 'field': 'name'}
-    elif 'description' in ' '.join(element.get('class', [])):
-        return {'type': 'text', 'field': 'description'}
-    elif 'content' in ' '.join(element.get('class', [])):
-        return {'type': 'text', 'field': 'content'}
-    
-    return None
-
-
-def generate_field_call(field_mapping, element):
-    """
-    Generate WordPress field call for an element
-    """
-    if field_mapping['type'] == 'image':
-        return f'<?php if (get_field("{field_mapping["field"]}")) : ?><img src="<?php echo get_field("{field_mapping["field"]}"); ?>" alt="<?php the_title(); ?>"><?php endif; ?>'
-    elif field_mapping['type'] == 'text':
-        return f'<?php echo get_field("{field_mapping["field"]}") ?: get_the_title(); ?>'
-    
-    return str(element)  # Return original if we can't map it
-
-
-def replace_team_member_fields(html_content):
-    """
-    Replace common team member field patterns with WordPress calls
-    """
-    # Replace common patterns
-    html_content = re.sub(r'<img[^>]*class="[^"]*main-image[^"]*"[^>]*>', 
-                         '<?php if (get_field("main-image")) : ?><img src="<?php echo get_field("main-image"); ?>" alt="<?php the_title(); ?>"><?php endif; ?>', 
-                         html_content)
-    
-    html_content = re.sub(r'<h[1-6][^>]*class="[^"]*name[^"]*"[^>]*>.*?</h[1-6]>', 
-                         '<h3><?php the_title(); ?></h3>', 
-                         html_content)
-    
-    html_content = re.sub(r'<[^>]*class="[^"]*position[^"]*"[^>]*>.*?</[^>]*>', 
-                         '<p><?php echo get_field("position"); ?></p>', 
-                         html_content)
-    
-    return html_content
-
-
-def replace_review_fields(html_content):
-    """
-    Replace common review field patterns with WordPress calls
-    """
-    html_content = re.sub(r'<[^>]*class="[^"]*review-text[^"]*"[^>]*>.*?</[^>]*>', 
-                         '<p><?php echo get_field("review-text") ?: get_the_content(); ?></p>', 
-                         html_content)
-    
-    html_content = re.sub(r'<[^>]*class="[^"]*author[^"]*"[^>]*>.*?</[^>]*>', 
-                         '<p><?php echo get_field("author") ?: get_the_title(); ?></p>', 
-                         html_content)
-    
-    html_content = re.sub(r'<[^>]*class="[^"]*rating[^"]*"[^>]*>.*?</[^>]*>', 
-                         '<div class="rating"><?php echo get_field("rating"); ?></div>', 
-                         html_content)
-    
-    return html_content
-
-
-def sanitize_collection_name(name):
-    """
-    Sanitize collection name for WordPress post type
-    """
-    return re.sub(r'[^a-z0-9_-]', '', name.lower().replace(' ', '-'))
-
-    
-def inject_individual_items(soup, collection_mapping):
-    """
-    Replaces individual CMS-bound elements with WordPress field calls
-    """
-    # Look for elements with CMS binding attributes or patterns
-    cms_bound_elements = soup.find_all(attrs={
-        'data-name': True,
-        'data-field': True,
-        'data-cms': True
-    })
-    
-    # Also look for common CMS field patterns
-    cms_patterns = [
-        {'tag': 'img', 'class': re.compile(r'.*main-image.*')},
-        {'tag': 'h1', 'class': re.compile(r'.*heading.*|.*title.*')},
-        {'tag': 'h2', 'class': re.compile(r'.*heading.*|.*title.*')},
-        {'tag': 'h3', 'class': re.compile(r'.*heading.*|.*title.*')},
-        {'tag': 'p', 'class': re.compile(r'.*description.*|.*content.*')},
-        {'tag': 'div', 'class': re.compile(r'.*rich-text.*')},
-    ]
-    
-    for pattern in cms_patterns:
-        elements = soup.find_all(pattern['tag'], class_=pattern.get('class'))
-        for element in elements:
-            # Try to map this element to a CMS field
-            field_mapping = detect_field_mapping(element, collection_mapping)
-            if field_mapping:
-                # Replace with WordPress field call
-                wp_field_call = generate_field_call(field_mapping, element)
-                if wp_field_call:
-                    new_element = BeautifulSoup(wp_field_call, 'html.parser')
-                    element.replace_with(new_element)
-    
-    return soup
-
-
-def inject_special_collections(soup, collection_mapping):
-    """
-    Handle special collection types like testimonials, team members, etc.
-    """
-    # Handle team members specifically
-    if 'team-members' in collection_mapping or 'team members' in collection_mapping:
-        team_collection = collection_mapping.get('team-members') or collection_mapping.get('team members')
-        if team_collection:
-            # Find team member containers
-            team_containers = soup.select('.team-member, .member-card, [class*="team"], [class*="member"]')
-            for container in team_containers:
-                wp_team_loop = f"""
-                <?php
-                $team_query = new WP_Query(array(
-                    'post_type' => '{team_collection["post_type"]}',
-                    'posts_per_page' => -1,
-                    'post_status' => 'publish'
-                ));
-                if ($team_query->have_posts()) :
-                    while ($team_query->have_posts()) : $team_query->the_post();
-                ?>
-                {str(container)}
-                <?php
-                    endwhile;
-                    wp_reset_postdata();
-                endif;
-                ?>
-                """
-                # Replace static content with dynamic fields inside the container
-                wp_team_loop = replace_team_member_fields(wp_team_loop)
-                new_element = BeautifulSoup(wp_team_loop, 'html.parser')
-                container.replace_with(new_element)
-                break  # Only replace the first container to avoid duplicates
-    
-    # Handle reviews/testimonials
-    if 'reviews' in collection_mapping or 'testimonials' in collection_mapping:
-        review_collection = collection_mapping.get('reviews') or collection_mapping.get('testimonials')
-        if review_collection:
-            review_containers = soup.select('.review, .testimonial, [class*="review"], [class*="testimonial"]')
-            for container in review_containers:
-                wp_review_loop = f"""
-                <?php
-                $review_query = new WP_Query(array(
-                    'post_type' => '{review_collection["post_type"]}',
-                    'posts_per_page' => -1,
-                    'post_status' => 'publish'
-                ));
-                if ($review_query->have_posts()) :
-                    while ($review_query->have_posts()) : $review_query->the_post();
-                ?>
-                {str(container)}
-                <?php
-                    endwhile;
-                    wp_reset_postdata();
-                endif;
-                ?>
-                """
-                wp_review_loop = replace_review_fields(wp_review_loop)
-                new_element = BeautifulSoup(wp_review_loop, 'html.parser')
-                container.replace_with(new_element)
-                break
-    
-    return soup
-
-
-def detect_collection_type(element, collection_mapping):
-    """
-    Try to determine which collection type this element represents
-    """
-    # Check element classes and attributes for collection hints
-    classes = ' '.join(element.get('class', []))
-    element_id = element.get('id', '')
-    
-    for collection_name, collection_info in collection_mapping.items():
-        collection_keywords = [
-            collection_name.lower(),
-            collection_info['post_type'].replace('webflow_', ''),
-            'team', 'member', 'review', 'testimonial', 'portfolio', 'project', 'service'
-        ]
-        
-        # Check classes and ID for matches
-        search_text = (classes + ' ' + element_id).lower()
-        if any(keyword in search_text for keyword in collection_keywords):
-            return {
-                'name': collection_name,
-                'post_type': collection_info['post_type'],
-                'fields': collection_info['fields']
-            }
-    
-    return None
-
-
 
 def generate_plugin_from_template(collections, theme_name):
     """Generates the importer plugin from template file with progress tracking"""
@@ -774,8 +485,8 @@ def update_style_css_with_theme_name(output_theme, theme_name):
     """
     style_css_path = os.path.join(output_theme, 'style.css')
     
-    # Create proper WordPress theme header using string formatting
-    wordpress_theme_header = """/*
+    # Create proper WordPress theme header
+    wordpress_theme_header = f"""/*
 Theme Name: {theme_name}
 Description: Converted from Webflow to WordPress theme with CMS integration
 Version: 1.0.0
@@ -783,7 +494,7 @@ Author: Webflow to WP Converter
 Author URI: https://yoursite.com
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: {theme_text_domain}
+Text Domain: {theme_name.lower().replace(' ', '-')}
 Tags: webflow, responsive, cms, custom-post-types
 Requires at least: 5.0
 Tested up to: 6.4
@@ -793,10 +504,7 @@ This theme was automatically converted from Webflow.
 Includes CMS content and Advanced Custom Fields integration.
 */
 
-""".format(
-        theme_name=theme_name,
-        theme_text_domain=theme_name.lower().replace(' ', '-')
-    )
+"""
 
     if os.path.exists(style_css_path):
         with open(style_css_path, 'r', encoding='utf-8') as f:
@@ -834,11 +542,7 @@ def create_theme_management_files(output_theme, theme_name):
     # 1. Create functions.php if it doesn't exist
     functions_php_path = os.path.join(output_theme, 'functions.php')
     if not os.path.exists(functions_php_path):
-        theme_slug = theme_name.lower().replace(' ', '_').replace('-', '_')
-        theme_text_domain = theme_name.lower().replace(' ', '-')
-        
-        # Use string formatting instead of f-strings to avoid PHP brace conflicts
-        functions_content = """<?php
+        functions_content = f"""<?php
 /**
  * {theme_name} Functions and Definitions
  */
@@ -847,7 +551,7 @@ def create_theme_management_files(output_theme, theme_name):
 if (!defined('ABSPATH')) exit;
 
 // Theme setup
-function {theme_slug}_setup() {{
+function {theme_name.lower().replace(' ', '_').replace('-', '_')}_setup() {{
     // Add theme support for various features
     add_theme_support('post-thumbnails');
     add_theme_support('title-tag');
@@ -856,63 +560,72 @@ function {theme_slug}_setup() {{
     
     // Register navigation menus
     register_nav_menus(array(
-        'primary' => __('Primary Menu', '{theme_text_domain}'),
-        'footer' => __('Footer Menu', '{theme_text_domain}'),
+        'primary' => __('Primary Menu', '{theme_name.lower().replace(' ', '-')}'),
+        'footer' => __('Footer Menu', '{theme_name.lower().replace(' ', '-')}'),
     ));
 }}
-add_action('after_setup_theme', '{theme_slug}_setup');
+add_action('after_setup_theme', '{theme_name.lower().replace(' ', '_').replace('-', '_')}_setup');
 
 // Enqueue styles and scripts
-function {theme_slug}_scripts() {{
+function {theme_name.lower().replace(' ', '_').replace('-', '_')}_scripts() {{
     // Main stylesheet
-    wp_enqueue_style('{theme_text_domain}-style', get_stylesheet_uri(), array(), '1.0.0');
+    wp_enqueue_style('{theme_name.lower().replace(' ', '-')}-style', get_stylesheet_uri(), array(), '1.0.0');
     
     // Webflow CSS files
     if (file_exists(get_template_directory() . '/css/normalize.css')) {{
-        wp_enqueue_style('{theme_text_domain}-normalize', get_template_directory_uri() . '/css/normalize.css', array(), '1.0.0');
+        wp_enqueue_style('{theme_name.lower().replace(' ', '-')}-normalize', get_template_directory_uri() . '/css/normalize.css', array(), '1.0.0');
     }}
     if (file_exists(get_template_directory() . '/css/webflow.css')) {{
-        wp_enqueue_style('{theme_text_domain}-webflow', get_template_directory_uri() . '/css/webflow.css', array(), '1.0.0');
+        wp_enqueue_style('{theme_name.lower().replace(' ', '-')}-webflow', get_template_directory_uri() . '/css/webflow.css', array(), '1.0.0');
     }}
     if (file_exists(get_template_directory() . '/css/components.css')) {{
-        wp_enqueue_style('{theme_text_domain}-components', get_template_directory_uri() . '/css/components.css', array(), '1.0.0');
+        wp_enqueue_style('{theme_name.lower().replace(' ', '-')}-components', get_template_directory_uri() . '/css/components.css', array(), '1.0.0');
     }}
     
     // Webflow JS files
     if (file_exists(get_template_directory() . '/js/webflow.js')) {{
-        wp_enqueue_script('{theme_text_domain}-webflow-js', get_template_directory_uri() . '/js/webflow.js', array('jquery'), '1.0.0', true);
+        wp_enqueue_script('{theme_name.lower().replace(' ', '-')}-webflow-js', get_template_directory_uri() . '/js/webflow.js', array('jquery'), '1.0.0', true);
     }}
 }}
-add_action('wp_enqueue_scripts', '{theme_slug}_scripts');
+add_action('wp_enqueue_scripts', '{theme_name.lower().replace(' ', '_').replace('-', '_')}_scripts');
 
 // Widget areas
-function {theme_slug}_widgets_init() {{
+function {theme_name.lower().replace(' ', '_').replace('-', '_')}_widgets_init() {{
     register_sidebar(array(
-        'name'          => __('Sidebar', '{theme_text_domain}'),
+        'name'          => __('Sidebar', '{theme_name.lower().replace(' ', '-')}'),
         'id'            => 'sidebar-1',
-        'description'   => __('Add widgets here.', '{theme_text_domain}'),
+        'description'   => __('Add widgets here.', '{theme_name.lower().replace(' ', '-')}'),
         'before_widget' => '<section id="%1$s" class="widget %2$s">',
         'after_widget'  => '</section>',
         'before_title'  => '<h2 class="widget-title">',
         'after_title'   => '</h2>',
     ));
 }}
-add_action('widgets_init', '{theme_slug}_widgets_init');
+add_action('widgets_init', '{theme_name.lower().replace(' ', '_').replace('-', '_')}_widgets_init');
 
-// Theme cleanup on switch/delete
-function {theme_slug}_cleanup() {{
+// Add ACF support notice
+function {theme_name.lower().replace(' ', '_').replace('-', '_')}_acf_notice() {{
+    if (!class_exists('ACF') && current_user_can('activate_plugins')) {{
+        echo '<div class="notice notice-warning"><p>';
+        echo sprintf(
+            __('This theme requires Advanced Custom Fields plugin for full functionality. <a href="%s">Install ACF</a>', '{theme_name.lower().replace(' ', '-')}'),
+            admin_url('plugin-install.php?s=Advanced+Custom+Fields&tab=search&type=term')
+        );
+        echo '</p></div>';
+    }}
+}}
+add_action('admin_notices', '{theme_name.lower().replace(' ', '_').replace('-', '_')}_acf_notice');
+
+// Theme cleanup on switch
+function {theme_name.lower().replace(' ', '_').replace('-', '_')}_cleanup() {{
     // Clean up any theme-specific options or data
-    delete_option('{theme_text_domain}_settings');
+    delete_option('{theme_name.lower().replace(' ', '-')}_settings');
     
     // Flush rewrite rules
     flush_rewrite_rules();
 }}
-add_action('switch_theme', '{theme_slug}_cleanup');
-?>""".format(
-            theme_name=theme_name,
-            theme_slug=theme_slug,
-            theme_text_domain=theme_text_domain
-        )
+add_action('switch_theme', '{theme_name.lower().replace(' ', '_').replace('-', '_')}_cleanup');
+?>"""
         
         with open(functions_php_path, 'w', encoding='utf-8') as f:
             f.write(functions_content)
@@ -921,7 +634,7 @@ add_action('switch_theme', '{theme_slug}_cleanup');
     # 2. Create index.php fallback if it doesn't exist
     index_php_path = os.path.join(output_theme, 'index.php')
     if not os.path.exists(index_php_path):
-        index_content = """<?php
+        index_content = f"""<?php
 /**
  * The main template file for {theme_name}
  */
@@ -943,15 +656,12 @@ get_header(); ?>
                 </article>
             <?php endwhile; ?>
         <?php else : ?>
-            <p><?php _e('No content found.', '{theme_text_domain}'); ?></p>
+            <p><?php _e('No content found.', '{theme_name.lower().replace(' ', '-')}'); ?></p>
         <?php endif; ?>
     </div>
 </main>
 
-<?php get_footer(); ?>""".format(
-            theme_name=theme_name,
-            theme_text_domain=theme_name.lower().replace(' ', '-')
-        )
+<?php get_footer(); ?>"""
         
         with open(index_php_path, 'w', encoding='utf-8') as f:
             f.write(index_content)
@@ -960,7 +670,7 @@ get_header(); ?>
     # 3. Create header.php if it doesn't exist
     header_php_path = os.path.join(output_theme, 'header.php')
     if not os.path.exists(header_php_path):
-        header_content = """<!DOCTYPE html>
+        header_content = f"""<!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
@@ -976,13 +686,13 @@ get_header(); ?>
     <header id="masthead" class="site-header">
         <div class="site-branding">
             <?php
-            if (has_custom_logo()) {
+            if (has_custom_logo()) {{
                 the_custom_logo();
-            } else {
+            }} else {{
                 ?>
                 <h1 class="site-title"><a href="<?php echo esc_url(home_url('/')); ?>" rel="home"><?php bloginfo('name'); ?></a></h1>
                 <?php
-            }
+            }}
             ?>
         </div>
         
@@ -1004,16 +714,16 @@ get_header(); ?>
     # 4. Create footer.php if it doesn't exist
     footer_php_path = os.path.join(output_theme, 'footer.php')
     if not os.path.exists(footer_php_path):
-        footer_content = """    <footer id="colophon" class="site-footer">
+        footer_content = f"""    <footer id="colophon" class="site-footer">
         <div class="site-info">
-            <p>&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>. <?php _e('Converted from Webflow.', '{theme_text_domain}'); ?></p>
+            <p>&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>. <?php _e('Converted from Webflow.', '{theme_name.lower().replace(' ', '-')}'); ?></p>
         </div>
     </footer>
 </div><!-- #page -->
 
 <?php wp_footer(); ?>
 </body>
-</html>""".format(theme_text_domain=theme_name.lower().replace(' ', '-'))
+</html>"""
         
         with open(footer_php_path, 'w', encoding='utf-8') as f:
             f.write(footer_content)
@@ -1021,7 +731,7 @@ get_header(); ?>
 
     # 5. Create README.txt for theme information
     readme_path = os.path.join(output_theme, 'README.txt')
-    readme_content = """=== {theme_name} ===
+    readme_content = f"""=== {theme_name} ===
 
 Contributors: webflow-converter
 Tags: webflow, responsive, cms, custom-post-types
@@ -1044,7 +754,7 @@ Features:
 
 == Installation ==
 
-1. Upload the theme files to the `/wp-content/themes/{theme_slug}` directory
+1. Upload the theme files to the `/wp-content/themes/{theme_name.lower().replace(' ', '-')}` directory
 2. Activate the theme through the 'Appearance' screen in WordPress
 3. Install and activate Advanced Custom Fields plugin
 4. Upload and activate the included Webflow Importer plugin
@@ -1056,15 +766,17 @@ Features:
 * WordPress 5.0 or higher
 * PHP 7.4 or higher
 
+== Support ==
+
+This theme was automatically generated. For support with the conversion process, 
+please contact the theme converter administrator.
+
 == Changelog ==
 
 = 1.0.0 =
 * Initial release
 * Converted from Webflow
-* CMS integration added""".format(
-        theme_name=theme_name,
-        theme_slug=theme_name.lower().replace(' ', '-')
-    )
+* CMS integration added"""
 
     with open(readme_path, 'w', encoding='utf-8') as f:
         f.write(readme_content)
@@ -1087,8 +799,7 @@ Features:
 
 
 
-
-
+# Also add this to your convert function after the theme copy
 def finalize_wordpress_theme(output_theme, theme_name):
     """
     Finalize the WordPress theme for proper installation and deletion
@@ -1115,35 +826,35 @@ def finalize_wordpress_theme(output_theme, theme_name):
     
     # Create a proper theme.json file for modern WordPress themes
     theme_json_path = os.path.join(output_theme, 'theme.json')
-    theme_json_content = {
+    theme_json_content = {{
         "version": 2,
-        "settings": {
+        "settings": {{
             "appearanceTools": True,
-            "layout": {
+            "layout": {{
                 "contentSize": "1200px",
                 "wideSize": "1400px"
-            },
-            "typography": {
+            }},
+            "typography": {{
                 "fontFamilies": [
-                    {
+                    {{
                         "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif",
                         "name": "System Font",
                         "slug": "system-font"
-                    }
+                    }}
                 ]
-            }
-        },
+            }}
+        }},
         "templateParts": [],
         "customTemplates": []
-    }
+    }}
     
     with open(theme_json_path, 'w', encoding='utf-8') as f:
         json.dump(theme_json_content, f, indent=2)
     print("Created theme.json for modern WordPress compatibility")
     
-    print(f"✅ Theme '{theme_name}' is now properly configured for WordPress installation and deletion")
+    print(f" Theme '{theme_name}' is now properly configured for WordPress installation and deletion")
 
-
+    
 @app.route("/delete_temp_zip", methods=["POST"])
 def delete_temp_zip():
     data = request.get_json()
