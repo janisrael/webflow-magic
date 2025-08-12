@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Webflow to WordPress Converter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body class="bg-light py-5">
+
+  <div class="container">
+    <div class="card shadow-lg p-4 mx-auto" style="max-width: 700px;">
+      <h2 class="text-center mb-4 text-primary">Webflow to WordPress Converter</h2>
+      
+      <form action="/convert" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="theme-name" class="form-label">Template Name</label>
+          <input type="text" class="form-control" id="theme-name" name="theme_name" required placeholder="e.g. converted-theme">
+        </div>
+
+        <div class="mb-3">
+          <label for="webflow-zip" class="form-label">Webflow ZIP File</label>
+          <input type="file" class="form-control" id="webflow-zip" name="webflow_zip" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="screenshot" class="form-label">Upload Theme Screenshot</label>
+          <input type="file" class="form-control" id="screenshot" name="screenshot" accept=".png,.jpg,.jpeg">
+        </div>
+
+        <div class="mb-3">
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" id="enable-cms" name="enable_cms">
+            <label class="form-check-label" for="enable-cms">Include CMS Content</label>
+          </div>
+          
+          <div id="cms-fields" style="display: none;">
+            <div class="mb-3">
+              <label for="api-token" class="form-label">Webflow API Token</label>
+              <input type="password" class="form-control" id="api-token" name="api_token" 
+                     placeholder="Get this from Project Settings → API Access">
+            </div>
+            <div class="mb-3">
+              <label for="site-id" class="form-label">Webflow Site ID</label>
+              <input type="text" class="form-control" id="site-id" name="site_id" 
+                     placeholder="Found in Project Settings → API Access">
+            </div>
+            
+            <!-- Custom Collection Selectors -->
+            <div class="mb-3">
+              <label for="custom-selectors" class="form-label">Custom Collection CSS Selectors</label>
+              <textarea class="form-control" id="custom-selectors" name="custom_selectors" rows="4" 
+                        placeholder="Enter CSS selectors for your collection containers, one per line:
+.my-team-grid
+.portfolio-slider
+.testimonial-carousel
+#reviews-section
+.dynamic-content"></textarea>
+              <div class="form-text">
+                Add CSS selectors (classes, IDs, attributes) that contain your CMS collections. 
+                Examples: <code>.team-grid</code>, <code>#portfolio-slider</code>, <code>[data-collection="reviews"]</code>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">Convert Now</button>
+        </div>
+      </form>
+
+      <!-- Theme Management Section -->
+      <!-- <div class="mt-4 pt-3 border-top">
+        <h5 class="mb-3">Theme Management</h5>
+        <div class="row">
+          <div class="col-md-8">
+            <input type="text" class="form-control" id="theme-to-delete" placeholder="Enter theme name to delete">
+          </div>
+          <div class="col-md-4">
+            <button type="button" class="btn btn-danger w-100" id="delete-theme-btn">Delete Theme</button>
+          </div>
+        </div>
+        <div class="form-text mt-2">
+          Delete previously generated theme files from the server.
+        </div>
+      </div> -->
+
+      <div class="status mt-4">
+        <h5>Status:</h5>
+        <pre id="status-output" class="bg-light border p-2 rounded">Waiting for input...</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Your script -->
+  <script src="static/script.js"></script>
+
+  <script>
+  document.getElementById('enable-cms').addEventListener('change', function() {
+    document.getElementById('cms-fields').style.display = 
+      this.checked ? 'block' : 'none';
+  });
+
+  // Delete theme functionality
+  document.getElementById('delete-theme-btn').addEventListener('click', function() {
+    const themeName = document.getElementById('theme-to-delete').value.trim();
+    if (!themeName) {
+      alert('Please enter a theme name to delete');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete the theme "${themeName}"?`)) {
+      return;
+    }
+
+    fetch('/delete-theme', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ theme_name: themeName })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(`Theme "${themeName}" deleted successfully!`);
+        document.getElementById('theme-to-delete').value = '';
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while deleting the theme');
+    });
+  });
+</script>
+</body>
+</html>

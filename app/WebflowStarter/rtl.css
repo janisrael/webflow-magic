@@ -1,0 +1,20 @@
+/*
+Theme Name: SourseSelectStarterTheme
+Theme URI: https://sourceselect.ca/
+Description: Converted Webflow theme for SourceSelect.
+Author: SourceSelect
+Author URI: https://sourceselect.ca/
+Version: 1.0
+*/
+
+/*
+To support RTL (Right To Left) languages, add styles in rtl.css.
+See: https://codex.wordpress.org/Right-to-Left_Language_Support
+*/
+
+/*
+body {
+	direction: rtl;
+	unicode-bidi: embed;
+}
+*/
