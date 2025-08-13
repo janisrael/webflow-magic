@@ -3,7 +3,7 @@
  * Plugin Name: {{PLUGIN_NAME}}
  * Description: Automatically creates WordPress pages for all converted Webflow pages
  * Version: 1.0.0
- * Author: Webflow to WP Converter
+ * Author: SourceSelect.ca
  */
 
 // Prevent direct access
@@ -366,7 +366,7 @@ class WebflowAutoPageCreator
                 <?php if ($results = get_transient('webflow_pages_results')): ?>
                     <div class="notice notice-<?php echo $results['success'] ? 'success' : 'error'; ?>">
                         <?php if ($results['success']): ?>
-                            <p><strong>✅ Pages Created Successfully!</strong></p>
+                            <p><strong> Pages Created Successfully!</strong></p>
                             <p>Created: <?php echo $results['created']; ?> pages</p>
                             <p>Skipped: <?php echo $results['skipped']; ?> pages</p>
                             <p>Time: <?php echo number_format($results['time'], 2); ?> seconds</p>
@@ -375,7 +375,7 @@ class WebflowAutoPageCreator
                                 <p><strong>Created:</strong> <?php echo implode(', ', $results['created_pages']); ?></p>
                             <?php endif; ?>
                         <?php else: ?>
-                            <p><strong>❌ Error:</strong> <?php echo esc_html($results['error'] ?? 'Unknown error'); ?></p>
+                            <p><strong> Error:</strong> <?php echo esc_html($results['error'] ?? 'Unknown error'); ?></p>
                         <?php endif; ?>
 
                         <?php if (!empty($results['errors'])): ?>
@@ -430,7 +430,7 @@ class WebflowAutoPageCreator
                             <?php foreach ($pages_data as $page): ?>
                                 <?php
                                 $wp_page = get_page_by_path($page['slug']);
-                                $status = $wp_page ? '✅ Created' : '❌ Not Created';
+                                $status = $wp_page ? ' Created' : ' Not Created';
                                 $status_class = $wp_page ? 'success' : 'error';
                                 ?>
                                 <tr>
@@ -554,8 +554,8 @@ class WebflowAutoPageCreator
         if ($results = get_transient('webflow_pages_results')) {
             if ($results['success'] && $results['created'] > 0) {
                 echo '<div class="notice notice-success is-dismissible">';
-                echo '<p><strong>🎉 Webflow Pages Created!</strong></p>';
-                echo '<p>✅ Created: ' . $results['created'] . ' pages</p>';
+                echo '<p><strong> Webflow Pages Created!</strong></p>';
+                echo '<p> Created: ' . $results['created'] . ' pages</p>';
                 echo '<p><a href="' . admin_url('edit.php?post_type=page') . '" class="button">View Pages →</a></p>';
                 echo '</div>';
             }

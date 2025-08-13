@@ -1,0 +1,417 @@
+/* ===========================================
+   CLICKUP ANALYTICS COMPONENT STYLES
+   =========================================== */
+
+/* ===========================================
+   TIMELINE SECTION
+   =========================================== */
+
+   .timeline-section {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.timeline-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timeline-date {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.timeline-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.time-filter {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-filter.active,
+.time-filter:hover {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: white;
+}
+
+/* ===========================================
+   TEAM MEMBER CARDS
+   =========================================== */
+
+.team-members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.member-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.member-card:hover {
+    border-color: #6366f1;
+    transform: translateY(-2px);
+}
+
+.member-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 2px;
+}
+
+.member-status {
+    font-size: 0.75rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: pulse 2s infinite;
+}
+
+.status-offline .status-indicator {
+    background: #64748b;
+    animation: none;
+}
+
+.member-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.member-stat {
+    text-align: center;
+    padding: 8px;
+    background: #1e293b;
+    border-radius: 6px;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 2px;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.member-timeline {
+    position: relative;
+    height: 20px;
+    background: #334155;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.timeline-bar {
+    position: absolute;
+    height: 100%;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.timeline-active {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.timeline-break {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.timeline-inactive {
+    background: #64748b;
+}
+
+/* ===========================================
+   ACTIVITY TIMELINE
+   =========================================== */
+
+.activity-timeline {
+    margin-top: 20px;
+}
+
+.timeline-hours {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px;
+    margin-bottom: 8px;
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.timeline-container {
+    position: relative;
+    height: 40px;
+    background: #334155;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.time-block {
+    position: absolute;
+    height: 100%;
+    top: 0;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.time-block:hover {
+    transform: scaleY(1.1);
+    z-index: 2;
+}
+
+.block-active {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.block-meeting {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+}
+
+.block-break {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.block-focused {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+}
+
+/* ===========================================
+   ACTIVITY LEGEND
+   =========================================== */
+
+.activity-legend {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 16px;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.legend-active { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.legend-meeting { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+.legend-break { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.legend-focused { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.legend-inactive { background: #64748b; }
+
+/* ===========================================
+   EMPTY STATE
+   =========================================== */
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.empty-state-description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* ===========================================
+   PRODUCTIVITY INSIGHTS
+   =========================================== */
+
+.productivity-insights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.insight-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.insight-icon {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 12px;
+    background: rgba(99, 102, 241, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.insight-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+}
+
+.insight-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.insight-trend {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.trend-up {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.trend-down {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.trend-stable {
+    background: rgba(99, 102, 241, 0.2);
+    color: #6366f1;
+}
+
+/* ===========================================
+   RESPONSIVE DESIGN
+   =========================================== */
+
+@media (max-width: 768px) {
+    .team-members-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .timeline-controls {
+        align-self: stretch;
+        justify-content: center;
+    }
+    
+    .activity-legend {
+        gap: 8px;
+    }
+    
+    .productivity-insights {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .member-stats {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+}

@@ -3,7 +3,7 @@
  * Plugin Name: {{PLUGIN_NAME}}
  * Description: Automatically sends beautiful response emails to contact form submissions with design customization
  * Version: 1.0.0
- * Author: Webflow to WP Converter
+ * Author: SourceSelect.ca
  */
 
 // Prevent direct access

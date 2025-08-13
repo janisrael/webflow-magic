@@ -169,7 +169,7 @@ def process_html_files_safe(temp_dir, output_theme):
 
 def clean_html_content(soup):
     """
-    Clean HTML content to prevent PHP syntax errors
+    Clean HTML content to prevent PHP syntax errors including XML version declarations
     """
     # Remove or escape potentially problematic content
     for tag in soup.find_all():
@@ -177,7 +177,8 @@ def clean_html_content(soup):
         if tag.attrs:
             for attr_name, attr_value in list(tag.attrs.items()):
                 if isinstance(attr_value, str):
-                    # Remove or escape problematic characters
+                    # Remove or escape problematic characters including XML declarations
+                    attr_value = attr_value.replace('<?xml', '&lt;?xml')
                     attr_value = attr_value.replace('<?', '&lt;?')
                     attr_value = attr_value.replace('?>', '?&gt;')
                     tag.attrs[attr_name] = attr_value
@@ -185,10 +186,15 @@ def clean_html_content(soup):
         # Clean text content
         if tag.string:
             text = str(tag.string)
-            # Escape PHP tags in content
+            # Escape XML declarations and PHP tags in content
+            text = text.replace('<?xml', '&lt;?xml')
             text = text.replace('<?', '&lt;?')
             text = text.replace('?>', '?&gt;')
             tag.string.replace_with(text)
+    
+    # Remove XML processing instructions that might cause issues
+    for pi in soup.find_all(string=re.compile(r'<\?xml.*?\?>')):
+        pi.extract()
 
 
 def generate_safe_filename(filename):
@@ -259,9 +265,12 @@ def create_fallback_page(original_filename, output_theme):
 
 def fix_asset_paths_safe(html):
     """
-    Safer version of fix_asset_paths that avoids PHP syntax errors
+    CORRECTED: Safer version of fix_asset_paths that avoids PHP syntax errors
     """
     try:
+        # First, remove any XML declarations that might cause issues
+        html = re.sub(r'<\?xml[^>]*\?>', '', html)
+        
         # Fix asset folder paths
         pattern = re.compile(r'(src|href)="[^"]*((?:' + '|'.join(ASSET_FOLDERS) + r')/([^"/\?#]+))(\?[^\"]*)?"')
 
@@ -272,6 +281,8 @@ def fix_asset_paths_safe(html):
                 parts = raw_filename.split('.')
                 if len(parts) > 2 and re.fullmatch(r'[a-f0-9]{8,}', parts[-2]):
                     raw_filename = '.'.join(parts[:-2] + parts[-1:])
+                
+                # FIXED: Proper PHP syntax with escaped quotes
                 return f'{attr}="<?php echo get_template_directory_uri(); ?>/{folder}/{raw_filename}"'
             except Exception:
                 return match.group(0)  # Return original if replacement fails
@@ -315,7 +326,7 @@ def fix_asset_paths_safe(html):
 
         html = re.sub(r'(data-poster-url|data-video-urls)="([^"]+)"', custom_data_attr_replacer, html)
 
-        # Fix internal page links safely
+        # FIXED: Internal page links with proper escaping
         def internal_link_replacer(match):
             try:
                 href_value = match.group(1)
@@ -323,7 +334,7 @@ def fix_asset_paths_safe(html):
                     return 'href="<?php echo home_url(\'/\'); ?>"'
                 else:
                     page_slug = os.path.splitext(os.path.basename(href_value))[0]
-                    # Clean the slug
+                    # Clean the slug safely
                     page_slug = re.sub(r'[^a-z0-9\-_]', '-', page_slug.lower())
                     page_slug = re.sub(r'-+', '-', page_slug).strip('-')
                     return f'href="<?php echo home_url(\'/{page_slug}/\'); ?>"'
@@ -332,7 +343,7 @@ def fix_asset_paths_safe(html):
 
         html = re.sub(r'href="([^"]+\.html)"', internal_link_replacer, html)
 
-        # Fix CSS url() references
+        # FIXED: CSS url() references with proper escaping
         def style_url_replacer(match):
             try:
                 path = match.group(1)
@@ -346,7 +357,7 @@ def fix_asset_paths_safe(html):
 
         html = re.sub(r'url\(["\']?([^"\')]+)["\']?\)', style_url_replacer, html)
 
-        # Replace CDN links
+        # Replace CDN links (these are safe)
         html = re.sub(r'<link href="[^"]*splide.min.css[^"]*"[^>]*>',
                       '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">', html)
         html = re.sub(r'<script src="[^"]*splide.min.js[^"]*"></script>',

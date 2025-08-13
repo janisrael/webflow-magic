@@ -4,3 +4,4 @@ app/webflow-temp
 app/WebflowStarter_old
 app/WebflowStarter_working
 app/webflow_export
+*.zip

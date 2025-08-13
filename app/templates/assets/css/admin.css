@@ -34,3 +34,122 @@
 .hidden {
     display: none;
 }
+
+.webflow-importer-container {
+    max-width: 800px;
+    margin-top: 20px;
+}
+
+.import-status-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+}
+
+.import-status {
+    margin-bottom: 15px;
+}
+
+.status-message {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.progress-container {
+    background: #f3f3f3;
+    height: 30px;
+    margin: 10px 0;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: #2271b1;
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+.current-action {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #2271b1;
+}
+
+.current-action .spinner {
+    float: none;
+    margin: 0 10px 0 0;
+}
+
+.action-text {
+    flex-grow: 1;
+}
+
+.import-controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+
+.import-results {
+    background: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+}
+
+.import-results h3 {
+    margin-top: 0;
+}
+
+.log-entries {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 3px;
+}
+
+.log-entry {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+    font-family: monospace;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-entry.success {
+    color: #4CAF50;
+}
+
+.log-entry.error {
+    color: #F44336;
+}
+
+.log-entry.warning {
+    color: #FF9800;
+}
+
+.log-entry.info {
+    color: #2196F3;
+}
