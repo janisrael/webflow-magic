@@ -86,6 +86,438 @@ def fetch_webflow_cms(api_token, site_id):
     return None
 
 
+def process_html_files_safe(temp_dir, output_theme):
+    """
+    Safely process HTML files to avoid PHP syntax errors
+    """
+    processed_files = []
+    
+    for filename in os.listdir(temp_dir):
+        if not filename.endswith('.html'):
+            continue
+
+        try:
+            filepath = os.path.join(temp_dir, filename)
+            print(f"Processing: {filename}")
+            
+            with open(filepath, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            # Parse with BeautifulSoup
+            soup = BeautifulSoup(content, 'html.parser')
+
+            # Remove problematic scripts and links that might cause PHP conflicts
+            for tag in soup.find_all(['script', 'link']):
+                src_or_href = tag.get('src') or tag.get('href') or ''
+                if any(lib in src_or_href.lower() for lib in ['jquery', 'splide']):
+                    tag.decompose()
+
+            # Clean up any potentially problematic content
+            clean_html_content(soup)
+
+            # Add CDN resources
+            head = soup.find('head')
+            if head:
+                cdn_jquery = soup.new_tag('script', src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js')
+                splide_css = soup.new_tag('link', rel='stylesheet', href='https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css')
+                splide_js = soup.new_tag('script', src='https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js')
+                head.insert(0, cdn_jquery)
+                head.append(splide_css)
+                head.append(splide_js)
+
+            # Add WordPress PHP includes
+            body = soup.find('body')
+            if body:
+                original = list(body.contents)
+                body.clear()
+                body.append(BeautifulSoup('<?php get_header(); ?>', 'html.parser'))
+                for item in original:
+                    body.append(item)
+                body.append(BeautifulSoup('<?php get_footer(); ?>', 'html.parser'))
+            else:
+                soup.insert(0, BeautifulSoup('<?php get_header(); ?>', 'html.parser'))
+                soup.append(BeautifulSoup('<?php get_footer(); ?>', 'html.parser'))
+
+            # Convert to string and fix asset paths
+            html_str = str(soup)
+            html_str = fix_asset_paths_safe(html_str)
+
+            # Generate safe output filename
+            out_filename = generate_safe_filename(filename)
+            out_path = os.path.join(output_theme, out_filename)
+
+            # Write the file safely
+            with open(out_path, 'w', encoding='utf-8') as f:
+                f.write(html_str)
+            
+            processed_files.append({
+                'original': filename,
+                'output': out_filename,
+                'path': out_path
+            })
+            
+            print(f"Created: {out_filename}")
+
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+            # Create a basic fallback file
+            create_fallback_page(filename, output_theme)
+            continue
+    
+    return processed_files
+
+
+def clean_html_content(soup):
+    """
+    Clean HTML content to prevent PHP syntax errors
+    """
+    # Remove or escape potentially problematic content
+    for tag in soup.find_all():
+        # Clean attributes that might cause issues
+        if tag.attrs:
+            for attr_name, attr_value in list(tag.attrs.items()):
+                if isinstance(attr_value, str):
+                    # Remove or escape problematic characters
+                    attr_value = attr_value.replace('<?', '&lt;?')
+                    attr_value = attr_value.replace('?>', '?&gt;')
+                    tag.attrs[attr_name] = attr_value
+        
+        # Clean text content
+        if tag.string:
+            text = str(tag.string)
+            # Escape PHP tags in content
+            text = text.replace('<?', '&lt;?')
+            text = text.replace('?>', '?&gt;')
+            tag.string.replace_with(text)
+
+
+def generate_safe_filename(filename):
+    """
+    Generate safe PHP filename from HTML filename
+    """
+    base_name = os.path.splitext(filename)[0]
+    
+    # Clean the filename
+    safe_name = base_name.lower()
+    safe_name = re.sub(r'[^a-z0-9\-_]', '-', safe_name)  # Replace special chars with hyphens
+    safe_name = re.sub(r'-+', '-', safe_name)  # Remove multiple hyphens
+    safe_name = safe_name.strip('-')  # Remove leading/trailing hyphens
+    
+    # Generate PHP filename
+    if filename.lower() == 'index.html':
+        return 'index.php'
+    else:
+        return f"page-{safe_name}.php"
+
+
+def create_fallback_page(original_filename, output_theme):
+    """
+    Create a basic fallback page if processing fails
+    """
+    try:
+        base_name = os.path.splitext(original_filename)[0]
+        safe_filename = generate_safe_filename(original_filename)
+        
+        fallback_content = f"""<?php get_header(); ?>
+
+<main id="main" class="site-main">
+    <div class="container">
+        <div class="error-notice">
+            <h1>Page Processing Error</h1>
+            <p>There was an issue processing the original Webflow page: <strong>{original_filename}</strong></p>
+            <p>This is a fallback page. Please check the original HTML file for syntax issues.</p>
+            <p><a href="<?php echo home_url(); ?>">Back to Home</a></p>
+        </div>
+    </div>
+</main>
+
+<style>
+.error-notice {{
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 20px 0;
+}}
+.error-notice h1 {{
+    color: #856404;
+    margin-top: 0;
+}}
+</style>
+
+<?php get_footer(); ?>"""
+        
+        fallback_path = os.path.join(output_theme, safe_filename)
+        with open(fallback_path, 'w', encoding='utf-8') as f:
+            f.write(fallback_content)
+        
+        print(f"Created fallback for {original_filename} to {safe_filename}")
+        
+    except Exception as e:
+        print(f"Failed to create fallback for {original_filename}: {e}")
+
+
+def fix_asset_paths_safe(html):
+    """
+    Safer version of fix_asset_paths that avoids PHP syntax errors
+    """
+    try:
+        # Fix asset folder paths
+        pattern = re.compile(r'(src|href)="[^"]*((?:' + '|'.join(ASSET_FOLDERS) + r')/([^"/\?#]+))(\?[^\"]*)?"')
+
+        def replacer(match):
+            try:
+                attr, folder_path, raw_filename = match.group(1), match.group(2), match.group(3)
+                folder = folder_path.split('/')[0]
+                parts = raw_filename.split('.')
+                if len(parts) > 2 and re.fullmatch(r'[a-f0-9]{8,}', parts[-2]):
+                    raw_filename = '.'.join(parts[:-2] + parts[-1:])
+                return f'{attr}="<?php echo get_template_directory_uri(); ?>/{folder}/{raw_filename}"'
+            except Exception:
+                return match.group(0)  # Return original if replacement fails
+
+        html = pattern.sub(replacer, html)
+
+        # Fix srcset attributes
+        def srcset_replacer(match):
+            try:
+                parts = [p.strip() for p in match.group(1).split(',')]
+                new_parts = []
+                for part in parts:
+                    url, size = part.rsplit(' ', 1) if ' ' in part else (part, '')
+                    folder = url.split('/')[0]
+                    filename = os.path.basename(url)
+                    segments = filename.split('.')
+                    if len(segments) > 2 and re.fullmatch(r'[a-f0-9]{8,}', segments[-2]):
+                        filename = '.'.join(segments[:-2] + segments[-1:])
+                    if folder in ASSET_FOLDERS:
+                        new_url = f'<?php echo get_template_directory_uri(); ?>/{folder}/{filename}'
+                        new_parts.append(f'{new_url} {size}'.strip())
+                    else:
+                        new_parts.append(part)
+                return f'srcset="{", ".join(new_parts)}"'
+            except Exception:
+                return match.group(0)
+
+        html = re.sub(r'srcset="([^"]+)"', srcset_replacer, html)
+
+        # Fix custom data attributes
+        def custom_data_attr_replacer(match):
+            try:
+                attr, path = match.groups()
+                folder = path.split('/')[0]
+                filename = os.path.basename(path)
+                if folder in ASSET_FOLDERS:
+                    return f'{attr}="<?php echo get_template_directory_uri(); ?>/{folder}/{filename}"'
+                return match.group(0)
+            except Exception:
+                return match.group(0)
+
+        html = re.sub(r'(data-poster-url|data-video-urls)="([^"]+)"', custom_data_attr_replacer, html)
+
+        # Fix internal page links safely
+        def internal_link_replacer(match):
+            try:
+                href_value = match.group(1)
+                if href_value.lower() == 'index.html':
+                    return 'href="<?php echo home_url(\'/\'); ?>"'
+                else:
+                    page_slug = os.path.splitext(os.path.basename(href_value))[0]
+                    # Clean the slug
+                    page_slug = re.sub(r'[^a-z0-9\-_]', '-', page_slug.lower())
+                    page_slug = re.sub(r'-+', '-', page_slug).strip('-')
+                    return f'href="<?php echo home_url(\'/{page_slug}/\'); ?>"'
+            except Exception:
+                return match.group(0)
+
+        html = re.sub(r'href="([^"]+\.html)"', internal_link_replacer, html)
+
+        # Fix CSS url() references
+        def style_url_replacer(match):
+            try:
+                path = match.group(1)
+                folder = path.split('/')[0]
+                filename = os.path.basename(path)
+                if folder in ASSET_FOLDERS:
+                    return f'url(<?php echo get_template_directory_uri(); ?>/{folder}/{filename})'
+                return match.group(0)
+            except Exception:
+                return match.group(0)
+
+        html = re.sub(r'url\(["\']?([^"\')]+)["\']?\)', style_url_replacer, html)
+
+        # Replace CDN links
+        html = re.sub(r'<link href="[^"]*splide.min.css[^"]*"[^>]*>',
+                      '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">', html)
+        html = re.sub(r'<script src="[^"]*splide.min.js[^"]*"></script>',
+                      '<script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>', html)
+
+        return html
+
+    except Exception as e:
+        print(f"Error in fix_asset_paths_safe: {e}")
+        return html  # Return original HTML if processing fails
+
+
+def extract_webflow_pages(webflow_temp_dir):
+    """
+    Extract all pages from Webflow export and prepare data for WordPress page creation
+    """
+    pages_data = []
+    
+    for filename in os.listdir(webflow_temp_dir):
+        if not filename.endswith('.html'):
+            continue
+            
+        filepath = os.path.join(webflow_temp_dir, filename)
+        
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                soup = BeautifulSoup(f, 'html.parser')
+            
+            # Extract page information
+            page_title = ""
+            page_slug = ""
+            meta_description = ""
+            
+            # Get title from <title> tag or <h1>
+            title_tag = soup.find('title')
+            if title_tag:
+                page_title = title_tag.get_text().strip()
+            else:
+                h1_tag = soup.find('h1')
+                if h1_tag:
+                    page_title = h1_tag.get_text().strip()
+                else:
+                    page_title = os.path.splitext(filename)[0].replace('-', ' ').title()
+            
+            # Get meta description
+            meta_desc = soup.find('meta', attrs={'name': 'description'})
+            if meta_desc:
+                meta_description = meta_desc.get('content', '')
+            
+            # Generate slug from filename
+            base_name = os.path.splitext(filename)[0].lower().replace(' ', '-')
+            page_slug = base_name if base_name != 'index' else 'home'
+            
+            # Determine template file name
+            template_name = 'index.php' if filename == 'index.html' else f"page-{base_name}.php"
+            
+            # Check if this should be the front page
+            is_front_page = filename.lower() == 'index.html'
+            
+            pages_data.append({
+                'filename': filename,
+                'title': page_title,
+                'slug': page_slug,
+                'template': template_name,
+                'meta_description': meta_description,
+                'is_front_page': is_front_page,
+                'content': f'<!-- Content will be loaded from {template_name} -->'
+            })
+            
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+            continue
+    
+    return pages_data
+
+
+def generate_page_creator_plugin_from_template(pages_data, theme_name):
+    """
+    Generate page creator plugin from template file
+    """
+    template_path = os.path.join(BASE_DIR, 'templates', 'webflow-page-creator.php')
+    
+    try:
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template = f.read()
+    except FileNotFoundError:
+        print(f"Template file not found: {template_path}")
+        print("Please create templates/webflow-page-creator.php")
+        return None
+    
+    # Prepare the JSON data with safe escaping
+    pages_json = json.dumps(pages_data, ensure_ascii=True, separators=(',', ':'))
+    pages_json = pages_json.replace('\\', '\\\\').replace("'", "\\'")
+    
+    # Replace placeholders in template
+    plugin_code = template.replace('{{PLUGIN_NAME}}', f'{theme_name} Auto Page Creator')
+    plugin_code = plugin_code.replace('{{PAGES_JSON}}', pages_json)
+    
+    return plugin_code
+
+
+def create_page_creator_plugin_files_template(output_theme, theme_name, pages_data):
+    """
+    Create the auto-page creator plugin files using template approach
+    """
+    # Create plugin directory
+    plugin_dir = os.path.join(output_theme, 'includes', 'plugins', 'webflow-page-creator')
+    os.makedirs(plugin_dir, exist_ok=True)
+    
+    # Debug pages data before processing
+    print(f"Processing {len(pages_data)} pages for creation:")
+    for i, page in enumerate(pages_data[:3]):  # Show first 3 for debugging
+        print(f"   {i+1}. {page.get('title', 'No title')} ({page.get('slug', 'No slug')})")
+    if len(pages_data) > 3:
+        print(f"   ... and {len(pages_data) - 3} more pages")
+    
+    # Generate plugin code from template
+    plugin_code = generate_page_creator_plugin_from_template(pages_data, theme_name)
+    
+    if not plugin_code:
+        print("Failed to generate page creator plugin from template")
+        return None
+    
+    # Save the main plugin file
+    plugin_file_path = os.path.join(plugin_dir, 'webflow-page-creator.php')
+    with open(plugin_file_path, 'w', encoding='utf-8') as f:
+        f.write(plugin_code)
+    
+    # Create plugin readme
+    readme_content = f"""=== {theme_name} Auto Page Creator ===
+Contributors: webflow-converter
+Tags: pages, auto-create, webflow, automation
+Requires at least: 5.0
+Tested up to: 6.4
+Stable tag: 1.0.0
+
+== Description ==
+Automatically creates WordPress pages for all your converted Webflow pages.
+
+== Installation ==
+Auto-installs when you activate your theme.
+
+== Usage ==
+Pages are created automatically on theme activation.
+Check Tools > Webflow Pages for status.
+
+== Changelog ==
+= 1.0.0 =
+* Initial release"""
+
+    readme_path = os.path.join(plugin_dir, 'readme.txt')
+    with open(readme_path, 'w', encoding='utf-8') as f:
+        f.write(readme_content)
+    
+    # Create the ZIP archive
+    page_creator_zip_path = os.path.join(output_theme, 'includes', 'plugins', 'webflow-page-creator.zip')
+    
+    with zipfile.ZipFile(page_creator_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(plugin_file_path, 'webflow-page-creator/webflow-page-creator.php')
+        zipf.write(readme_path, 'webflow-page-creator/readme.txt')
+    
+    print(f"Created Page Creator plugin from template: {page_creator_zip_path}")
+    
+    # Debug output for pages
+    print(f"Pages to be created:")
+    for page in pages_data:
+        print(f"   - {page['title']} ({page['slug']}) -> {page.get('template', 'default template')}")
+    
+    return page_creator_zip_path
+
+
 @app.route('/convert', methods=['POST'])
 def convert():
     theme_name = request.form.get('theme_name', 'converted-theme')
@@ -118,14 +550,12 @@ def convert():
     screenshot_dest = os.path.join(output_theme, "screenshot.png")  
     
     if screenshot_file and screenshot_file.filename != "":
-        # Remove existing screenshot from starter theme if it exists
         if os.path.exists(screenshot_dest):
             os.remove(screenshot_dest)
         screenshot_file.save(screenshot_dest)
         print(f"Custom screenshot uploaded and saved at: {screenshot_dest}")
         print(f"Screenshot file size: {os.path.getsize(screenshot_dest)} bytes")
     else:
-        # Only use default if no screenshot was uploaded and none exists
         if not os.path.exists(screenshot_dest):
             default_thumbnail = os.path.join(BASE_DIR, "assets", "screenshot.png")
             if os.path.exists(default_thumbnail):
@@ -143,6 +573,10 @@ def convert():
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(temp_dir)
     
+    # Extract Webflow pages data for auto-creation
+    pages_data = extract_webflow_pages(temp_dir)
+    print(f"Detected {len(pages_data)} pages for auto-creation: {[p['title'] for p in pages_data]}")
+    
     # Copy assets
     for folder in ASSET_FOLDERS:
         src = os.path.join(temp_dir, folder)
@@ -150,47 +584,15 @@ def convert():
         if os.path.exists(src):
             shutil.copytree(src, dest, dirs_exist_ok=True)
     
-    # Process HTML files
-    for filename in os.listdir(temp_dir):
-        if not filename.endswith('.html'):
-            continue
-
-        filepath = os.path.join(temp_dir, filename)
-        with open(filepath, 'r', encoding='utf-8') as f:
-            soup = BeautifulSoup(f, 'html.parser')
-
-        for tag in soup.find_all(['script', 'link']):
-            src_or_href = tag.get('src') or tag.get('href') or ''
-            if any(lib in src_or_href.lower() for lib in ['jquery', 'splide']):
-                tag.decompose()
-
-        head = soup.find('head')
-        if head:
-            cdn_jquery = soup.new_tag('script', src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js')
-            splide_css = soup.new_tag('link', rel='stylesheet', href='https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css')
-            splide_js = soup.new_tag('script', src='https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js')
-            head.insert(0, cdn_jquery)
-            head.append(splide_css)
-            head.append(splide_js)
-
-        body = soup.find('body')
-        if body:
-            original = list(body.contents)
-            body.clear()
-            body.append(BeautifulSoup('<?php get_header(); ?>', 'html.parser'))
-            for item in original:
-                body.append(item)
-            body.append(BeautifulSoup('<?php get_footer(); ?>', 'html.parser'))
-        else:
-            soup.insert(0, BeautifulSoup('<?php get_header(); ?>', 'html.parser'))
-            soup.append(BeautifulSoup('<?php get_footer(); ?>', 'html.parser'))
-
-        html_str = fix_asset_paths(str(soup))
-        out_filename = 'index.php' if filename == 'index.html' else f"page-{os.path.splitext(filename)[0].lower().replace(' ', '-')}.php"
-        out_path = os.path.join(output_theme, out_filename)
-
-        with open(out_path, 'w', encoding='utf-8') as f:
-            f.write(html_str)
+    # SAFE HTML PROCESSING (prevents PHP syntax errors)
+    processed_files = process_html_files_safe(temp_dir, output_theme)
+    print(f"Processed {len(processed_files)} HTML files successfully")
+    
+    # Update pages_data to include only successfully processed files
+    if processed_files:
+        processed_filenames = [f['original'] for f in processed_files]
+        pages_data = [page for page in pages_data if page.get('filename') in processed_filenames]
+        print(f"{len(pages_data)} pages ready for WordPress creation")
 
     components_css_path = os.path.join(output_theme, 'css', 'components.css')
     override_css = '\n.w-section {\n  display: none !important;\n}\n'
@@ -214,6 +616,7 @@ def convert():
     else:
         cms_data = extract_webflow_collections(temp_dir)
 
+    # CREATE CMS IMPORTER PLUGIN (if CMS data exists)
     if cms_data:
         # Save raw CMS data
         cms_dir = os.path.join(output_theme, 'cms-data')
@@ -234,21 +637,30 @@ def convert():
             f.write(plugin_code)
         
         # 2. Create readme.txt
-        readme_content = f"""=== {theme_name} Importer ===
-            Contributors: webflow-to-wp
-            Tags: webflow, import, cms, migration
-            Requires at least: 5.0
-            Tested up to: 6.0
-            Stable tag: 1.0.0
+        readme_content = f"""=== {theme_name} CMS Importer ===
+Contributors: webflow-to-wp
+Tags: webflow, import, cms, migration, auto-import
+Requires at least: 5.0
+Tested up to: 6.4
+Stable tag: 1.0.0
 
-            == Description ==
-            This plugin imports Webflow CMS content into WordPress with progress tracking.
+== Description ==
+Automatically imports Webflow CMS content into WordPress.
 
-            == Installation ==
-            1. Install and activate Advanced Custom Fields
-            2. Upload this plugin via WordPress admin
-            3. The import will run automatically
-            4. Check admin notices for results"""
+== Installation ==
+Auto-installs when you activate your theme.
+
+== Usage ==
+CMS import runs automatically on plugin activation.
+
+== Requirements ==
+* Advanced Custom Fields (recommended)
+* WordPress 5.0 or newer
+* PHP 7.4 or newer
+
+== Changelog ==
+= 1.0.0 =
+* Initial release"""
         
         readme_path = os.path.join(plugin_dir, 'readme.txt')
         with open(readme_path, 'w') as f:
@@ -258,50 +670,54 @@ def convert():
         importer_zip_path = os.path.join(output_theme, 'includes', 'plugins', 'webflow-importer.zip')
         
         with zipfile.ZipFile(importer_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Add files with proper relative paths
             zipf.write(plugin_file_path, 'webflow-importer/webflow-importer.php')
             zipf.write(readme_path, 'webflow-importer/readme.txt')
-            
-            # If you have additional files (like readme.txt), add them like this:
-            # readme_path = os.path.join(plugin_dir, 'readme.txt')
-            # if os.path.exists(readme_path):
-            #     zipf.write(readme_path, 'webflow-importer/readme.txt')
         
-        if not os.path.exists(importer_zip_path):
-            raise Exception(f"Failed to create ZIP at {importer_zip_path}")
+        print(f"Created CMS importer: {importer_zip_path}")
         
-        print(f"Successfully created:")
-        print(f"Created plugin at: {plugin_dir}")
-        print(f"Created ZIP archive at: {importer_zip_path}")
+        # Verify collections data for debugging
+        print(f"CMS Collections to import: {len(cms_data)}")
+        for collection in cms_data:
+            collection_name = collection.get('name', collection.get('slug', 'Unknown'))
+            item_count = len(collection.get('items', []))
+            print(f"   - {collection_name}: {item_count} items")
+    else:
+        print("No CMS data found - skipping CMS importer creation")
 
-        # Optional: Verify the ZIP was created
-        if os.path.exists(importer_zip_path):
-            print("ZIP verification: Success")
+    # CREATE AUTO PAGE CREATOR PLUGIN (Template-based)
+    if pages_data:
+        page_creator_zip = create_page_creator_plugin_files_template(output_theme, theme_name, pages_data)
+        if page_creator_zip:
+            print(f"Created Template-based Page Creator plugin: {page_creator_zip}")
         else:
-            print("ZIP verification: Failed")
-        
-        # Update readme with progress info
-        with open(os.path.join(plugin_dir, 'readme.txt'), 'w') as f:
-            f.write(f"=== {theme_name} Importer ===\n")
-            f.write("This plugin imports Webflow CMS content into WordPress.\n\n")
-            f.write("Features:\n")
-            f.write("- Automatic import on activation\n")
-            f.write("- Progress tracking during import\n")
-            f.write("- Detailed success/error reporting\n\n")
-            f.write("Requirements:\n")
-            f.write("1. Advanced Custom Fields PRO (recommended) or ACF Free\n")
-            f.write("2. WordPress 5.0 or newer\n\n")
-            f.write("Installation:\n")
-            f.write("1. Install and activate Advanced Custom Fields\n")
-            f.write("2. Upload and activate this plugin\n")
-            f.write("3. The import will run automatically\n")
-            f.write("4. Check admin notices for import results\n\n")
-            f.write("Troubleshooting:\n")
-            f.write("- If import doesn't run automatically, go to Tools > Webflow Import\n")
-            f.write("- Check error logs if you see any issues\n")
+            print("Failed to create Page Creator plugin - check template file exists")
+    else:
+        print("No pages data found - skipping Page Creator plugin")
+    
+    # CREATE AUTO-RESPONSE EMAIL PLUGIN (Always create, auto-installs)
+    auto_response_zip = create_auto_response_plugin_files(output_theme, theme_name)
+    if auto_response_zip:
+        print(f"Created Auto-Response Email plugin: {auto_response_zip}")
+    else:
+        print("Failed to create Auto-Response Email plugin")
+    
+    # UPDATE FUNCTIONS.PHP FOR AUTO-INSTALLATION (Updated to include page creator)
+    update_functions_php_for_auto_plugin_install_with_pages(
+        output_theme, 
+        theme_name, 
+        cms_data is not None, 
+        len(pages_data) > 0 if pages_data else False
+    )
 
-        print(f"Created separate importer zip at: {importer_zip_path}")
+    # Create installation guides
+    create_plugin_installation_guide_auto_install_with_pages(
+        output_theme, 
+        theme_name, 
+        cms_data is not None, 
+        len(pages_data) > 0 if pages_data else False
+    )
 
+    # Final theme packaging
     final_zip_path = os.path.join(temp_base, theme_name + ".zip")
     shutil.make_archive(final_zip_path.replace(".zip", ""), "zip", output_theme)
 
@@ -315,11 +731,196 @@ def convert():
 
     return response
 
+
+# Updated installation guide to include auto page creation
+def create_plugin_installation_guide_auto_install_with_pages(output_theme, theme_name, has_cms, has_pages):
+    """
+    Create updated installation guide for auto-installing plugins including page creator
+    """
+    
+    installation_guide = f"""
+# {theme_name} - AUTO-INSTALL Setup Guide
+
+## AUTOMATIC PLUGIN INSTALLATION + PAGE CREATION
+
+Your theme includes 3 AUTO-INSTALLING PLUGINS that set up everything automatically when you activate the theme!
+
+### What Happens Automatically:
+
+1. Theme Activation - All plugins install automatically
+2. WordPress Pages - Created automatically from Webflow pages  
+3. Auto-Response Mailer - Starts working immediately  
+4. CMS Content - Imported automatically (if applicable)
+5. Email Templates - Pre-configured and ready
+6. Form Detection - All contact forms work instantly
+
+## Included Auto-Installing Plugins
+
+### Auto Page Creator (ALWAYS INCLUDED)
+Status: AUTO-INSTALLS & CREATES PAGES
+Purpose: Automatically creates WordPress pages for all Webflow pages
+
+What You Get:
+- All Webflow pages become WordPress pages instantly
+- Correct page templates assigned automatically
+- Front page (index.html) set up automatically
+- SEO-friendly URLs and meta descriptions
+- Zero manual page creation needed
+
+### Auto-Response Email Mailer (ALWAYS INCLUDED)
+Status: AUTO-INSTALLS & ACTIVATES
+Purpose: Sends beautiful response emails to ALL contact form submissions
+
+What You Get:
+- Instant auto-response emails (no setup needed)
+- Professional email templates  
+- Works with ANY contact form automatically
+- Visual email designer for customization
+- Logo and branding support
+
+Customization: Go to Settings > Auto-Response Mailer (optional)
+
+"""
+
+    if has_cms:
+        installation_guide += f"""### {theme_name} CMS Importer (CMS THEMES)
+Status: AUTO-INSTALLS & RUNS IMPORT
+Purpose: Imports all Webflow CMS content automatically
+
+What You Get:
+- All CMS collections imported as custom post types
+- Dynamic content replaces static Webflow content  
+- Advanced Custom Fields integration
+- Progress tracking and error reporting
+
+Requirement: Advanced Custom Fields plugin (install first)
+
+"""
+
+    installation_guide += """
+## SUPER QUICK SETUP (2 Minutes)
+
+### Step 1: Upload & Activate Theme (30 seconds)
+Appearance > Themes > Add New > Upload Theme
+Upload your theme ZIP
+Click "Activate"
+
+### Step 2: Everything Auto-Installs (60 seconds)  
+Auto Page Creator - Creates all WordPress pages automatically
+Auto-Response Mailer - Installs automatically
+CMS Importer - Installs automatically (if CMS theme)
+Success notice appears in admin
+
+### Step 3: Verify Pages Created (30 seconds)
+Go to Pages > All Pages
+See all your Webflow pages now in WordPress!
+Check Tools > Webflow Pages for status
+
+### Step 4: Test Auto-Response (30 seconds)
+Go to Settings > Auto-Response Mailer
+Click "Send Test Email"  
+Enter your email
+Check your inbox!
+
+### Step 5: Done!
+Your complete WordPress site is ready with:
+- All pages created automatically
+- Contact forms sending professional auto-responses
+- CMS content imported (if applicable)
+
+## ZERO-CONFIGURATION FEATURES
+
+### Automatic Page Creation
+WordPress pages created automatically:
+- index.html - Home page (set as front page)
+- about.html - About page (/about/)
+- contact.html - Contact page (/contact/)
+- services.html - Services page (/services/)
+- Any-page.html - WordPress page (/any-page/)
+
+### Smart Template Assignment
+- about.html uses page-about.php template
+- contact.html uses page-contact.php template  
+- Automatic template matching for all pages
+
+### SEO Preservation
+- Page titles preserved from Webflow
+- Meta descriptions maintained
+- Clean, SEO-friendly URLs
+
+### Contact Form Auto-Detection
+Works automatically with:
+- Contact Form 7 - No setup needed
+- Gravity Forms - No setup needed  
+- Formidable Forms - No setup needed
+- Custom HTML Forms - No setup needed
+- Any form with email field - No setup needed
+
+## You're All Set!
+
+Your Webflow theme is now a complete WordPress website with:
+- All pages created automatically - No manual page creation needed
+- Instant auto-response emails for ALL contact forms
+- Professional email templates with your branding  
+- Zero configuration - works immediately
+- CMS content imported (if applicable)
+- WordPress best practices implemented
+
+Result: A fully functional WordPress website that mirrors your Webflow design with enhanced functionality!
+
+Theme converted by Webflow to WordPress Converter with Auto Page Creation
+"""
+
+    # Save the updated installation guide
+    guide_path = os.path.join(output_theme, 'AUTO-INSTALL-GUIDE.md')
+    with open(guide_path, 'w', encoding='utf-8') as f:
+        f.write(installation_guide)
+    
+    # Create simple setup card
+    setup_card = f"""
+{theme_name} - INSTANT SETUP
+===============================
+
+STEP 1: Activate Theme (30 sec)
+   Upload ZIP - Activate - Done!
+
+STEP 2: Everything Auto-Installs (60 sec)  
+   WordPress pages created automatically
+   Auto-Response Mailer installed
+   CMS Importer installed (if CMS)
+
+STEP 3: Verify (30 sec)
+   Pages > All Pages - See all your pages!
+   Settings > Auto-Response Mailer - Test email
+
+RESULT: Complete WordPress site ready!
+
+TOTAL TIME: 2 MINUTES
+
+For details, see AUTO-INSTALL-GUIDE.md
+"""
+    
+    setup_card_path = os.path.join(output_theme, 'INSTANT-SETUP.txt')
+    with open(setup_card_path, 'w', encoding='utf-8') as f:
+        f.write(setup_card)
+    
+    print(f"Created auto-install guides (with page creation):")
+    print(f"  - {guide_path}")
+    print(f"  - {setup_card_path}")
+    
+    return guide_path
+
+
 def generate_plugin_from_template(collections, theme_name):
     """Generates the importer plugin from template file with progress tracking"""
     template_path = os.path.join(BASE_DIR, 'templates', 'webflow-importer.php')
-    with open(template_path, 'r', encoding='utf-8') as f:
-        template = f.read()
+    
+    try:
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template = f.read()
+    except FileNotFoundError:
+        print(f"Template file not found: {template_path}")
+        return generate_basic_cms_plugin(collections, theme_name)
     
     # Prepare the JSON data with proper escaping
     collections_json = json.dumps(collections, ensure_ascii=False)
@@ -327,105 +928,58 @@ def generate_plugin_from_template(collections, theme_name):
     collections_json = collections_json.replace("'", "\\'")
     collections_json = collections_json.replace('"', '\\"')
     
-    # Add auto-import configuration
-    auto_import_config = """
-    // Auto-import configuration
-    define('WF_IMPORT_AUTO_RUN', true);
-    define('WF_IMPORT_DEBUG', true);
-    """
-    
-    # Progress tracking and admin notices code
-    progress_code = """
-    // Progress tracking and admin notices
-    add_action('admin_notices', 'webflow_importer_admin_notices');
-    function webflow_importer_admin_notices() {
-        if ($results = get_transient('webflow_import_results')) {
-            echo '<div class="notice notice-'.($results['error'] ? 'error' : 'success').'">';
-            if ($results['error']) {
-                echo "<p>Import error: ".esc_html($results['message'])."</p>";
-            } else {
-                foreach ($results['counts'] as $cpt => $count) {
-                    echo "<p>Imported $count items to $cpt</p>";
-                }
-                echo "<p>Total time: ".number_format($results['time'], 2)."s</p>";
-            }
-            echo '</div>';
-            delete_transient('webflow_import_results');
-        }
-        
-        if ($progress = get_transient('webflow_import_progress')) {
-            $percent = round(($progress['current'] / $progress['total']) * 100);
-            echo '<div class="notice notice-info">';
-            echo '<p><strong>Import Progress:</strong> '.$percent.'% complete</p>';
-            echo '<div class="progress-bar" style="background:#f1f1f1;height:20px;width:100%">';
-            echo '<div style="background:#2271b1;height:100%;width:'.$percent.'%"></div>';
-            echo '</div>';
-            echo '</div>';
-        }
-    }
-    """
-    
-    # Import function with progress tracking
-    import_function = """
-    function webflow_run_auto_import() {
-        $start_time = microtime(true);
-        $results = ['counts' => [], 'error' => false, 'time' => 0];
-        
-        try {
-            $collections = json_decode('{{COLLECTIONS_JSON}}', true);
-            $total = count($collections);
-            
-            foreach ($collections as $index => $collection) {
-                set_transient('webflow_import_progress', [
-                    'current' => $index + 1,
-                    'total' => $total,
-                    'collection' => $collection['slug']
-                ], 300);
-                
-                // Your existing import logic here
-                $count = webflow_import_collection($collection);
-                
-                $results['counts'][$collection['slug']] = $count;
-            }
-            
-            $results['time'] = microtime(true) - $start_time;
-            set_transient('webflow_import_results', $results, 60);
-            
-        } catch (Exception $e) {
-            set_transient('webflow_import_results', [
-                'error' => true,
-                'message' => $e->getMessage(),
-                'time' => microtime(true) - $start_time
-            ], 60);
-        }
-        
-        delete_transient('webflow_import_progress');
-        return $results;
-    }
-    """
-    
-    # Activation hook
-    activation_code = """
-    // Add auto-import trigger
-    register_activation_hook(__FILE__, function() {
-        update_option('webflow_do_auto_import', true);
-    });
-    
-    add_action('admin_init', function() {
-        if (get_option('webflow_do_auto_import')) {
-            delete_option('webflow_do_auto_import');
-            webflow_run_auto_import();
-        }
-    });
-    """
-    
     # Replace placeholders
-    plugin_code = template.replace('{{PLUGIN_NAME}}', f'{theme_name} Importer')
+    plugin_code = template.replace('{{PLUGIN_NAME}}', f'{theme_name} CMS Importer')
     plugin_code = plugin_code.replace('{{COLLECTIONS_JSON}}', collections_json)
-    plugin_code = plugin_code.replace('// {{AUTO_IMPORT_CONFIG}}', auto_import_config)
-    plugin_code = plugin_code.replace('// {{PROGRESS_TRACKING}}', progress_code)
-    plugin_code = plugin_code.replace('// {{IMPORT_FUNCTION}}', import_function)
-    plugin_code = plugin_code.replace('// {{ACTIVATION_HOOK}}', activation_code)
+    
+    return plugin_code
+
+
+def generate_basic_cms_plugin(collections, theme_name):
+    """
+    Fallback: Generate basic CMS plugin if template doesn't exist
+    """
+    collections_json = json.dumps(collections, ensure_ascii=True, separators=(',', ':'))
+    collections_json = collections_json.replace('\\', '\\\\').replace("'", "\\'")
+    
+    # Basic plugin without template - minimal working version
+    plugin_code = f"""<?php
+/**
+ * Plugin Name: {theme_name} CMS Importer
+ * Description: Imports Webflow CMS content into WordPress
+ * Version: 1.0.0
+ */
+
+if (!defined('ABSPATH')) exit;
+
+class WebflowCMSImporter {{
+    private $collections_data;
+    
+    public function __construct() {{
+        $this->collections_data = json_decode('{collections_json}', true);
+        add_action('admin_menu', array($this, 'add_admin_menu'));
+        register_activation_hook(__FILE__, array($this, 'activate_plugin'));
+    }}
+    
+    public function activate_plugin() {{
+        update_option('webflow_cms_auto_import_needed', true);
+        update_option('webflow_cms_collections_data', $this->collections_data);
+    }}
+    
+    public function add_admin_menu() {{
+        add_management_page('Webflow Import', 'Webflow Import', 'manage_options', 'webflow-import', array($this, 'admin_page'));
+    }}
+    
+    public function admin_page() {{
+        echo '<div class="wrap"><h1>Webflow CMS Importer</h1>';
+        echo '<p>CMS collections ready for import.</p>';
+        echo '<button onclick="alert(\'Import functionality needs full template\')">Import Now</button>';
+        echo '</div>';
+    }}
+}}
+
+new WebflowCMSImporter();
+?>"""
     
     return plugin_code
 
@@ -450,6 +1004,194 @@ def extract_webflow_collections(webflow_dir):
                         continue
     return collections
 
+
+def generate_auto_response_plugin_from_template(theme_name):
+    """
+    Generate auto-response email plugin from template file
+    """
+    template_path = os.path.join(BASE_DIR, 'templates', 'webflow-auto-mailer.php')
+    
+    try:
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template = f.read()
+    except FileNotFoundError:
+        print(f"Template file not found: {template_path}")
+        print("Please create templates/webflow-auto-mailer.php")
+        return None
+    
+    # Replace placeholders
+    plugin_code = template.replace('{{PLUGIN_NAME}}', f'{theme_name} Auto-Response Mailer')
+    
+    return plugin_code
+
+
+def create_auto_response_plugin_files(output_theme, theme_name):
+    """
+    Create the auto-response email plugin files using template
+    """
+    # Create plugin directory
+    plugin_dir = os.path.join(output_theme, 'includes', 'plugins', 'webflow-auto-mailer')
+    os.makedirs(plugin_dir, exist_ok=True)
+    
+    # Generate plugin code from template
+    plugin_code = generate_auto_response_plugin_from_template(theme_name)
+    
+    if not plugin_code:
+        print("Failed to generate auto-response plugin")
+        return None
+    
+    # Save the main plugin file
+    plugin_file_path = os.path.join(plugin_dir, 'webflow-auto-mailer.php')
+    with open(plugin_file_path, 'w', encoding='utf-8') as f:
+        f.write(plugin_code)
+    
+    # Create plugin readme
+    readme_content = f"""=== {theme_name} Auto-Response Mailer ===
+Contributors: webflow-converter
+Tags: email, auto-response, contact-form, mailer, automatic
+Requires at least: 5.0
+Tested up to: 6.4
+Stable tag: 1.0.0
+
+== Description ==
+Sends beautiful, customizable response emails to contact form submissions.
+
+== Installation ==
+Auto-installs when you activate your theme.
+
+== Usage ==
+Configure through Settings > Auto-Response Mailer.
+
+== Changelog ==
+= 1.0.0 =
+* Initial release"""
+
+    readme_path = os.path.join(plugin_dir, 'readme.txt')
+    with open(readme_path, 'w', encoding='utf-8') as f:
+        f.write(readme_content)
+    
+    # Create the ZIP archive
+    mailer_zip_path = os.path.join(output_theme, 'includes', 'plugins', 'webflow-auto-mailer.zip')
+    
+    with zipfile.ZipFile(mailer_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(plugin_file_path, 'webflow-auto-mailer/webflow-auto-mailer.php')
+        zipf.write(readme_path, 'webflow-auto-mailer/readme.txt')
+    
+    print(f"Created Auto-Response Email plugin from template: {mailer_zip_path}")
+    return mailer_zip_path
+
+
+def update_functions_php_for_auto_plugin_install_with_pages(output_theme, theme_name, has_cms=False, has_pages=True):
+    """
+    Updated version that includes auto page creator plugin
+    """
+    functions_php_path = os.path.join(output_theme, 'functions.php')
+    
+    theme_slug = theme_name.lower().replace(' ', '_').replace('-', '_')
+    
+    # Add auto-plugin installation code to functions.php
+    auto_install_code = f"""
+
+// Auto-install theme plugins on activation
+function {theme_slug}_auto_install_plugins() {{
+    // Check if plugins are already installed
+    $auto_mailer_installed = is_plugin_active('webflow-auto-mailer/webflow-auto-mailer.php');
+    $cms_importer_installed = is_plugin_active('webflow-importer/webflow-importer.php');
+    $page_creator_installed = is_plugin_active('webflow-page-creator/webflow-page-creator.php');
+    
+    $plugins_to_install = array();
+    
+    // Auto-Response Mailer (always install)
+    if (!$auto_mailer_installed) {{
+        $plugins_to_install[] = array(
+            'name' => '{theme_name} Auto-Response Mailer',
+            'zip' => get_template_directory() . '/includes/plugins/webflow-auto-mailer.zip',
+            'folder' => 'webflow-auto-mailer',
+            'main_file' => 'webflow-auto-mailer/webflow-auto-mailer.php'
+        );
+    }}
+    
+    {f'''// Auto Page Creator (always install)
+    if (!$page_creator_installed && file_exists(get_template_directory() . '/includes/plugins/webflow-page-creator.zip')) {{
+        $plugins_to_install[] = array(
+            'name' => '{theme_name} Page Creator',
+            'zip' => get_template_directory() . '/includes/plugins/webflow-page-creator.zip',
+            'folder' => 'webflow-page-creator',
+            'main_file' => 'webflow-page-creator/webflow-page-creator.php'
+        );
+    }}''' if has_pages else '// No page creator needed'}
+    
+    {f'''// CMS Importer (if CMS theme)
+    if (!$cms_importer_installed && file_exists(get_template_directory() . '/includes/plugins/webflow-importer.zip')) {{
+        $plugins_to_install[] = array(
+            'name' => '{theme_name} CMS Importer',
+            'zip' => get_template_directory() . '/includes/plugins/webflow-importer.zip',
+            'folder' => 'webflow-importer',
+            'main_file' => 'webflow-importer/webflow-importer.php'
+        );
+    }}''' if has_cms else '// No CMS plugin needed'}
+    
+    // Install plugins
+    if (!empty($plugins_to_install)) {{
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/misc.php';
+        require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+        
+        foreach ($plugins_to_install as $plugin) {{
+            if (file_exists($plugin['zip'])) {{
+                // Install plugin
+                $upgrader = new Plugin_Upgrader();
+                $result = $upgrader->install($plugin['zip']);
+                
+                if (!is_wp_error($result)) {{
+                    // Activate plugin
+                    activate_plugin($plugin['main_file']);
+                    
+                    // Add success notice
+                    set_transient('theme_plugins_installed', true, 60);
+                }}
+            }}
+        }}
+    }}
+}}
+
+// Auto-install on theme activation
+add_action('after_switch_theme', '{theme_slug}_auto_install_plugins');
+
+// Show installation notice
+add_action('admin_notices', function() {{
+    if (get_transient('theme_plugins_installed')) {{
+        echo '<div class="notice notice-success is-dismissible">';
+        echo '<p><strong>Theme Activated Successfully!</strong></p>';
+        echo '<p>Auto-Response Email plugin installed and activated</p>';
+        {f"echo '<p>Auto Page Creator plugin installed and activated</p>';" if has_pages else ''}
+        {f"echo '<p>CMS Importer plugin installed and activated</p>';" if has_cms else ''}
+        echo '<p><a href="' . admin_url('options-general.php?page=webflow-auto-mailer') . '" class="button button-primary">Configure Auto-Response Emails</a></p>';
+        {f"echo '<p><a href=\"' . admin_url('tools.php?page=webflow-pages') . '\" class=\"button\">View Created Pages</a></p>';" if has_pages else ''}
+        echo '</div>';
+        delete_transient('theme_plugins_installed');
+    }}
+}});"""
+    
+    # Append to existing functions.php
+    if os.path.exists(functions_php_path):
+        with open(functions_php_path, 'r', encoding='utf-8') as f:
+            existing_content = f.read()
+        
+        # Remove the closing ?> if it exists and add our code
+        if existing_content.strip().endswith('?>'):
+            existing_content = existing_content.strip()[:-2]
+        
+        updated_content = existing_content + auto_install_code + "\n?>"
+        
+        with open(functions_php_path, 'w', encoding='utf-8') as f:
+            f.write(updated_content)
+        
+        print("Updated functions.php with auto-plugin installation (including page creator)")
+    
+    return True
+
+
 def extract_fields(collection_data):
     """Extracts field definitions from collection data"""
     fields = []
@@ -460,6 +1202,7 @@ def extract_fields(collection_data):
             'type': map_field_type(field.get('type', 'text'))
         })
     return fields
+
 
 def map_field_type(webflow_type):
     """Maps Webflow field types to ACF field types"""
@@ -477,8 +1220,6 @@ def map_field_type(webflow_type):
     return mapping.get(webflow_type, 'text')
 
 
-
-    
 def update_style_css_with_theme_name(output_theme, theme_name):
     """
     Update style.css with proper WordPress theme header and make it deletable
@@ -533,6 +1274,7 @@ Includes CMS content and Advanced Custom Fields integration.
 
     # Create additional files needed for theme deletion
     create_theme_management_files(output_theme, theme_name)
+
 
 def create_theme_management_files(output_theme, theme_name):
     """
@@ -602,19 +1344,6 @@ function {theme_name.lower().replace(' ', '_').replace('-', '_')}_widgets_init()
     ));
 }}
 add_action('widgets_init', '{theme_name.lower().replace(' ', '_').replace('-', '_')}_widgets_init');
-
-// Add ACF support notice
-function {theme_name.lower().replace(' ', '_').replace('-', '_')}_acf_notice() {{
-    if (!class_exists('ACF') && current_user_can('activate_plugins')) {{
-        echo '<div class="notice notice-warning"><p>';
-        echo sprintf(
-            __('This theme requires Advanced Custom Fields plugin for full functionality. <a href="%s">Install ACF</a>', '{theme_name.lower().replace(' ', '-')}'),
-            admin_url('plugin-install.php?s=Advanced+Custom+Fields&tab=search&type=term')
-        );
-        echo '</p></div>';
-    }}
-}}
-add_action('admin_notices', '{theme_name.lower().replace(' ', '_').replace('-', '_')}_acf_notice');
 
 // Theme cleanup on switch
 function {theme_name.lower().replace(' ', '_').replace('-', '_')}_cleanup() {{
@@ -729,132 +1458,7 @@ get_header(); ?>
             f.write(footer_content)
         print("Created footer.php template")
 
-    # 5. Create README.txt for theme information
-    readme_path = os.path.join(output_theme, 'README.txt')
-    readme_content = f"""=== {theme_name} ===
 
-Contributors: webflow-converter
-Tags: webflow, responsive, cms, custom-post-types
-Requires at least: 5.0
-Tested up to: 6.4
-Requires PHP: 7.4
-License: GPL v2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
-
-== Description ==
-
-This theme was automatically converted from Webflow to WordPress.
-
-Features:
-* Responsive design
-* CMS content integration
-* Advanced Custom Fields support
-* Custom post types for Webflow collections
-* Original Webflow styling preserved
-
-== Installation ==
-
-1. Upload the theme files to the `/wp-content/themes/{theme_name.lower().replace(' ', '-')}` directory
-2. Activate the theme through the 'Appearance' screen in WordPress
-3. Install and activate Advanced Custom Fields plugin
-4. Upload and activate the included Webflow Importer plugin
-5. Your CMS content will be automatically imported
-
-== Requirements ==
-
-* Advanced Custom Fields plugin (recommended)
-* WordPress 5.0 or higher
-* PHP 7.4 or higher
-
-== Support ==
-
-This theme was automatically generated. For support with the conversion process, 
-please contact the theme converter administrator.
-
-== Changelog ==
-
-= 1.0.0 =
-* Initial release
-* Converted from Webflow
-* CMS integration added"""
-
-    with open(readme_path, 'w', encoding='utf-8') as f:
-        f.write(readme_content)
-    print("Created README.txt for theme documentation")
-
-    # 6. Make sure proper file permissions are set
-    try:
-        # Set proper permissions for PHP files
-        php_files = ['index.php', 'functions.php', 'header.php', 'footer.php']
-        for php_file in php_files:
-            file_path = os.path.join(output_theme, php_file)
-            if os.path.exists(file_path):
-                os.chmod(file_path, 0o644)
-        
-        # Set permissions for the theme directory
-        os.chmod(output_theme, 0o755)
-        print("Set proper file permissions for WordPress theme")
-    except Exception as e:
-        print(f"Could not set file permissions: {e}")
-
-
-
-# Also add this to your convert function after the theme copy
-def finalize_wordpress_theme(output_theme, theme_name):
-    """
-    Finalize the WordPress theme for proper installation and deletion
-    """
-    
-    # Ensure all necessary WordPress theme files exist
-    required_files = {
-        'style.css': 'Main stylesheet with theme header',
-        'index.php': 'Main template file', 
-        'functions.php': 'Theme functions',
-        'screenshot.png': 'Theme preview image'
-    }
-    
-    missing_files = []
-    for file_name, description in required_files.items():
-        file_path = os.path.join(output_theme, file_name)
-        if not os.path.exists(file_path):
-            missing_files.append(f"{file_name} ({description})")
-    
-    if missing_files:
-        print(f"Warning: Missing required theme files: {', '.join(missing_files)}")
-    else:
-        print("All required WordPress theme files present")
-    
-    # Create a proper theme.json file for modern WordPress themes
-    theme_json_path = os.path.join(output_theme, 'theme.json')
-    theme_json_content = {{
-        "version": 2,
-        "settings": {{
-            "appearanceTools": True,
-            "layout": {{
-                "contentSize": "1200px",
-                "wideSize": "1400px"
-            }},
-            "typography": {{
-                "fontFamilies": [
-                    {{
-                        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif",
-                        "name": "System Font",
-                        "slug": "system-font"
-                    }}
-                ]
-            }}
-        }},
-        "templateParts": [],
-        "customTemplates": []
-    }}
-    
-    with open(theme_json_path, 'w', encoding='utf-8') as f:
-        json.dump(theme_json_content, f, indent=2)
-    print("Created theme.json for modern WordPress compatibility")
-    
-    print(f" Theme '{theme_name}' is now properly configured for WordPress installation and deletion")
-
-    
 @app.route("/delete_temp_zip", methods=["POST"])
 def delete_temp_zip():
     data = request.get_json()
@@ -863,7 +1467,6 @@ def delete_temp_zip():
         os.remove(zip_path)
         return jsonify({"message": "Temporary ZIP deleted."})
     return jsonify({"error": "ZIP file not found."}), 404
-
 
 
 def fix_asset_paths(html):
@@ -923,7 +1526,6 @@ def fix_asset_paths(html):
         html
     )
 
-    # html = re.sub(r'href="([^"]+\.html)"', lambda m: f'href="<?php echo site_url(\'/{os.path.splitext(os.path.basename(m.group(1)))[0]}\'); ?>"', html)
     html = re.sub(r'url\(["\']?([^"\')]+)["\']?\)', style_url_replacer, html)
 
     html = re.sub(r'<link href="[^"]*splide.min.css[^"]*"[^>]*>',
@@ -932,6 +1534,7 @@ def fix_asset_paths(html):
                   '<script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>', html)
 
     return html
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5022, debug=True)

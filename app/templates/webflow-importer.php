@@ -1,8 +1,9 @@
 <?php
 /*
-Plugin Name: Webflow CMS Importer (100% Working)
+Plugin Name: Webflow Magic
 Description: Guaranteed to show imported content in admin menu
 Version: 4.0
+By: SourceSelect.ca
 */
 
 class Webflow_Importer_Complete
