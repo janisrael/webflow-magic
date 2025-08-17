@@ -6,3 +6,5 @@ app/WebflowStarter_working
 app/webflow_export
 *.zip
 /final-theme.env
+.env
+.env
