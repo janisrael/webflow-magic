@@ -276,9 +276,22 @@ input:checked + .toggle-slider-tools:before {
 /* Action Bar Styles */
 .action-bar {
     display: flex;
-    justify-content: flex-end;
+    /* justify-content: flex-end; */
+    justify-content: space-between;
     margin-bottom: 20px;
 }
+
+
+a#seoReportBtn {
+    background-color: #cb95fd;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    text-decoration: double;
+    color: #464646 !important;
+    font-weight: 900;
+}
+
 
 .convert-button {
     display: inline-flex;
@@ -351,7 +364,7 @@ input:checked + .toggle-slider-tools:before {
 
 .status-log {
     font-family: 'Courier New', monospace;
-    white-space: pre-wrap;
+    /* white-space: pre-wrap; */
     color: #e2e8f0;
     max-height: 200px;
     overflow-y: auto;

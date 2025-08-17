@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='components/shared/dashboard-core.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/projects_tracker/projects_tracker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/clickup_analytics/clickup_analytics.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='components/calendar_analytics/calendar_analytics.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/tools/webflow_importer.css') }}">
   
 </head>
@@ -40,7 +39,7 @@
         <div class="nav-tabs">
             <button class="nav-tab" data-tab="clickup">ClickUp Analytics</button>
             <button class="nav-tab active" data-tab="projects">Project Tracker</button>
-            <button class="nav-tab" data-tab="calendar">Calendar Dashboard</button>
+            <button class="nav-tab" data-tab="website">Website Tracker</button>
             <button class="nav-tab" data-tab="tools">Tools</button>
         </div>
 
@@ -56,9 +55,18 @@
                 <div id="projects-tracker-widget"></div>
             </div>
 
-            <!-- Calendar Analytics Widget -->
-            <div class="tab-content" id="calendar-tab">
-                <div id="calendar-analytics-widget"></div>
+            <!-- Website Tracker Widget -->
+            <div class="tab-content" id="website-tab">
+                <div id="website-tracker-widget">
+                    <div class="projects-section">
+                        <div class="section-header">
+                            <h3 class="section-title">🌐 Website Analytics</h3>
+                        </div>
+                        <div style="color: #64748b; text-align: center; padding: 40px;">
+                            Website tracking data will be displayed here
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Tools Tab - Webflow Importer -->
@@ -130,6 +138,36 @@
                           </div>
                       </div>
                       
+                      <!-- File Upload Card -->
+                      <!-- <div class="converter-card">
+                          <div class="card-header">
+                              <h4 class="card-title">File Uploads</h4>
+                          </div>
+                          <div class="card-body">
+                              <div class="form-group">
+                                  <label class="form-label">Webflow ZIP File</label>
+                                  <div class="file-upload">
+                                      <input type="file" id="webflow-zip" class="file-input" name="webflow_zip" required>
+                                      <label for="webflow-zip" class="file-label">
+                                          <div>Click to upload Webflow export ZIP</div>
+                                          <div class="file-name" id="zip-file-name">No file selected</div>
+                                      </label>
+                                  </div>
+                              </div>
+          
+                              <div class="form-group">
+                                  <label class="form-label">Theme Screenshot</label>
+                                  <div class="file-upload">
+                                      <input type="file" id="screenshot" class="file-input" name="screenshot" accept=".png,.jpg,.jpeg">
+                                      <label for="screenshot" class="file-label">
+                                          <div>Click to upload theme screenshot</div>
+                                          <div class="file-name" id="screenshot-file-name">No file selected</div>
+                                      </label>
+                                  </div>
+                              </div>
+                          </div>
+                      </div> -->
+                      
                       <!-- SEO Optimization Card -->
                       <div class="converter-card">
                           <div class="card-header">
@@ -165,6 +203,19 @@
                                           <option value="Non-profit">
                                           <option value="Entertainment">
                                         </datalist>
+                                      <!-- <select class="form-input" id="business-type" name="business_type">
+                                          <option value="">Select business type...</option>
+                                          <option value="restaurant">Restaurant</option>
+                                          <option value="retail">Retail Store</option>
+                                          <option value="service">Service Business</option>
+                                          <option value="health">Healthcare</option>
+                                          <option value="technology">Technology</option>
+                                          <option value="education">Education</option>
+                                          <option value="real estate">Real Estate</option>
+                                          <option value="law">Legal Services</option>
+                                          <option value="consulting">Consulting</option>
+                                          <option value="other">Other</option>
+                                      </select> -->
                                       <small class="form-help">Helps optimize SEO for your specific industry</small>
                                   </div>
                                   
@@ -308,7 +359,6 @@
     <!-- Component Scripts -->
     <script src="{{ url_for('static', filename='components/clickup_analytics/clickup_analytics.js') }}"></script>
     <script src="{{ url_for('static', filename='components/projects_tracker/projects_tracker.js') }}"></script>
-    <script src="{{ url_for('static', filename='components/calendar_analytics/calendar_analytics.js') }}"></script>
     <script src="{{ url_for('static', filename='components/tools/webflow_importer.js') }}"></script>
 
     <!-- Main Dashboard Controller -->
@@ -421,12 +471,6 @@
                 
                 if (typeof ProjectsTracker !== 'undefined') {
                     this.components.projects = new ProjectsTracker('projects-tracker-widget');
-                }
-
-                if (typeof CalendarAnalytics !== 'undefined') {
-                    this.components.calendar = new CalendarAnalytics('calendar-analytics-widget');
-                    // Make it globally accessible for date selection
-                    window.calendarAnalytics = this.components.calendar;
                 }
                 
                 if (typeof WebflowImporter !== 'undefined') {

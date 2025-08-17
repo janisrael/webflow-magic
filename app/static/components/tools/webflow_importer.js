@@ -16,13 +16,27 @@ class WebflowImporter {
 
     // File name display handlers
     document.getElementById("webflow-zip")?.addEventListener("change", function () {
-      document.getElementById("zip-file-name").textContent =
-        this.files[0]?.name || "No file selected";
+      const zipFileNameEl = document.getElementById("zip-file-name");
+
+      if (this.files.length > 0) {
+        zipFileNameEl.textContent = this.files[0].name;
+        zipFileNameEl.style.color = "#79ffdb"; // Change text color
+      } else {
+        zipFileNameEl.textContent = "No file selected";
+        zipFileNameEl.style.color = ""; // Reset to default
+      }
     });
 
     document.getElementById("screenshot")?.addEventListener("change", function () {
-      document.getElementById("screenshot-file-name").textContent =
-        this.files[0]?.name || "No file selected";
+      const screenshotFileNameEl = document.getElementById("screenshot-file-name");
+
+      if (this.files.length > 0) {
+        screenshotFileNameEl.textContent = this.files[0].name;
+        screenshotFileNameEl.style.color = "#79ffdb"; // Change text color
+      } else {
+        screenshotFileNameEl.textContent = "No file selected";
+        screenshotFileNameEl.style.color = ""; // Reset to default
+      }
     });
 
     // CMS toggle handler
@@ -96,7 +110,7 @@ class WebflowImporter {
       // Update UI
       button.disabled = true;
       button.innerHTML =
-        '<span class="button-icon">⏳</span><span class="button-text">Processing...</span>';
+        '<span class="button-icon">...</span><span class="button-text">Processing...</span>';
       this.updateProgress(0, "Preparing files");
       this.updateStatus("Starting conversion process...");
 
@@ -123,6 +137,23 @@ class WebflowImporter {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      // Check for SEO report URL in headers
+      const seoReportUrl = response.headers.get("X-SEO-Report-URL");
+      if (seoReportUrl) {
+        const seoReportsDiv = document.getElementById("seo-reports-url");
+        if (seoReportsDiv) {
+          seoReportsDiv.innerHTML = `
+          <a href="${seoReportUrl}" 
+             id="seoReportBtn" 
+             class="btn btn-success" 
+             target="_blank"
+             style="display: inline-block; margin-top: 10px;">
+             View SEO Report
+          </a>
+        `;
+        }
       }
 
       // Get the filename from Content-Disposition header
