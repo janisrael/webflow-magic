@@ -23,6 +23,17 @@ body {
     padding: 20px;
 }
 
+
+/* For Chrome, Edge, Safari */
+::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* For Firefox */
+  html {
+    scrollbar-width: none;
+  }
+
 /* ===========================================
    HEADER STYLES
    =========================================== */
