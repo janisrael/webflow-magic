@@ -320,6 +320,20 @@
     filter: drop-shadow(0 0 8px rgba(255, 20, 147, 0.5));
 }
 
+.overloaded-alert-cotainer {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border-left: 4px solid #ef4444;
+}
+
+.overloaded-alert-cotainer ul {
+    padding: 14px;
+    list-style: none;
+}
+
 .demo-badge {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
     color: #f59e0b;
@@ -1581,3 +1595,4 @@
         grid-template-columns: 1fr;
     }
 }
+
