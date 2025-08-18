@@ -1,0 +1,542 @@
+{
+  "member_workloads": {
+    "Jan": {
+      "username": "Jan",
+      "active_tasks": 12,
+      "projects_count": 3,
+      "projects": [
+        {
+          "name": "E-commerce Website Redesign",
+          "due_date": "2025-08-25T17:00:00",
+          "status": "active",
+          "priority": "high"
+        },
+        {
+          "name": "Mobile App Backend",
+          "due_date": "2025-09-10T17:00:00", 
+          "status": "active",
+          "priority": "medium"
+        },
+        {
+          "name": "Client Portal Development",
+          "due_date": "2025-08-30T17:00:00",
+          "status": "active", 
+          "priority": "high"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "User Authentication System",
+          "id": "task_001",
+          "status": "in_progress",
+          "due_date": "1724778000000",
+          "priority": {
+            "priority": "high",
+            "color": "#f50000"
+          }
+        },
+        {
+          "name": "Payment Gateway Integration",
+          "id": "task_002", 
+          "status": "in_progress",
+          "due_date": "1724864400000",
+          "priority": {
+            "priority": "urgent",
+            "color": "#ff0000"
+          }
+        }
+      ],
+      "total_time_estimate": 2880,
+      "total_time_spent": 720,
+      "urgent_tasks": 2,
+      "high_priority_tasks": 4,
+      "due_soon_tasks": 3,
+      "workload_score": 185.5,
+      "status": "overloaded",
+      "remaining_time": 2160,
+      "downtime_hours": 0.5
+    },
+    "Arif": {
+      "username": "Arif", 
+      "active_tasks": 8,
+      "projects_count": 2,
+      "projects": [
+        {
+          "name": "Marketing Automation Platform",
+          "due_date": "2025-09-05T17:00:00",
+          "status": "active",
+          "priority": "medium"
+        },
+        {
+          "name": "Data Analytics Dashboard",
+          "due_date": "2025-09-15T17:00:00",
+          "status": "active",
+          "priority": "low"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Email Campaign Builder",
+          "id": "task_003",
+          "status": "in_progress", 
+          "due_date": "1725465600000",
+          "priority": {
+            "priority": "medium",
+            "color": "#ffb400"
+          }
+        }
+      ],
+      "total_time_estimate": 1920,
+      "total_time_spent": 480,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 2,
+      "due_soon_tasks": 1,
+      "workload_score": 115.8,
+      "status": "high",
+      "remaining_time": 1440,
+      "downtime_hours": 1.2
+    },
+    "Wiktor": {
+      "username": "Wiktor",
+      "active_tasks": 6,
+      "projects_count": 2,
+      "projects": [
+        {
+          "name": "E-commerce Website Redesign", 
+          "due_date": "2025-08-25T17:00:00",
+          "status": "active",
+          "priority": "high"
+        },
+        {
+          "name": "Internal Tools Development",
+          "due_date": "2025-09-20T17:00:00",
+          "status": "active",
+          "priority": "medium"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Frontend Component Library",
+          "id": "task_004",
+          "status": "in_progress",
+          "due_date": "1724950800000",
+          "priority": {
+            "priority": "high",
+            "color": "#f50000"
+          }
+        }
+      ],
+      "total_time_estimate": 1440,
+      "total_time_spent": 360,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 3,
+      "due_soon_tasks": 2,
+      "workload_score": 98.7,
+      "status": "balanced",
+      "remaining_time": 1080,
+      "downtime_hours": 0.8
+    },
+    "Tricia Kennedy": {
+      "username": "Tricia Kennedy",
+      "active_tasks": 4,
+      "projects_count": 2,
+      "projects": [
+        {
+          "name": "Marketing Automation Platform",
+          "due_date": "2025-09-05T17:00:00",
+          "status": "active",
+          "priority": "medium"
+        },
+        {
+          "name": "Content Management System",
+          "due_date": "2025-10-01T17:00:00",
+          "status": "active",
+          "priority": "low"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Content Workflow Design",
+          "id": "task_005",
+          "status": "in_progress",
+          "due_date": "1725984000000",
+          "priority": {
+            "priority": "medium",
+            "color": "#ffb400"
+          }
+        }
+      ],
+      "total_time_estimate": 960,
+      "total_time_spent": 240,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 1,
+      "due_soon_tasks": 0,
+      "workload_score": 65.3,
+      "status": "balanced",
+      "remaining_time": 720,
+      "downtime_hours": 0.3
+    },
+    "Calum": {
+      "username": "Calum",
+      "active_tasks": 3,
+      "projects_count": 1,
+      "projects": [
+        {
+          "name": "Content Management System",
+          "due_date": "2025-10-01T17:00:00",
+          "status": "active",
+          "priority": "low"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "User Documentation",
+          "id": "task_006",
+          "status": "in_progress",
+          "due_date": "1726070400000",
+          "priority": {
+            "priority": "low",
+            "color": "#00c851"
+          }
+        }
+      ],
+      "total_time_estimate": 720,
+      "total_time_spent": 180,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 0,
+      "due_soon_tasks": 0,
+      "workload_score": 42.1,
+      "status": "light",
+      "remaining_time": 540,
+      "downtime_hours": 0.0
+    }
+  },
+  "project_analytics": {
+    "ecommerce_redesign": {
+      "name": "E-commerce Website Redesign",
+      "active_tasks": 18,
+      "assigned_members": ["Jan", "Wiktor"],
+      "member_count": 2,
+      "total_time_estimate": 4320,
+      "due_date": "2025-08-25T17:00:00",
+      "priority": "high",
+      "status": "active"
+    },
+    "mobile_backend": {
+      "name": "Mobile App Backend",
+      "active_tasks": 12,
+      "assigned_members": ["Jan"],
+      "member_count": 1,
+      "total_time_estimate": 2880,
+      "due_date": "2025-09-10T17:00:00",
+      "priority": "medium",
+      "status": "active"
+    },
+    "marketing_automation": {
+      "name": "Marketing Automation Platform",
+      "active_tasks": 12,
+      "assigned_members": ["Arif", "Tricia Kennedy"],
+      "member_count": 2,
+      "total_time_estimate": 2880,
+      "due_date": "2025-09-05T17:00:00",
+      "priority": "medium",
+      "status": "active"
+    },
+    "client_portal": {
+      "name": "Client Portal Development",
+      "active_tasks": 6,
+      "assigned_members": ["Jan"],
+      "member_count": 1,
+      "total_time_estimate": 1440,
+      "due_date": "2025-08-30T17:00:00",
+      "priority": "high",
+      "status": "active"
+    },
+    "data_analytics": {
+      "name": "Data Analytics Dashboard",
+      "active_tasks": 8,
+      "assigned_members": ["Arif"],
+      "member_count": 1,
+      "total_time_estimate": 1920,
+      "due_date": "2025-09-15T17:00:00",
+      "priority": "low",
+      "status": "active"
+    },
+    "internal_tools": {
+      "name": "Internal Tools Development",
+      "active_tasks": 6,
+      "assigned_members": ["Wiktor"],
+      "member_count": 1,
+      "total_time_estimate": 1440,
+      "due_date": "2025-09-20T17:00:00",
+      "priority": "medium",
+      "status": "active"
+    },
+    "cms_system": {
+      "name": "Content Management System",
+      "active_tasks": 7,
+      "assigned_members": ["Tricia Kennedy", "Calum"],
+      "member_count": 2,
+      "total_time_estimate": 1680,
+      "due_date": "2025-10-01T17:00:00",
+      "priority": "low",
+      "status": "active"
+    }
+  },
+  "timeline_analysis": {
+    "urgent_deadlines": [
+      {
+        "name": "Payment Gateway Integration",
+        "id": "task_002",
+        "status": "in_progress",
+        "due_date": "1724864400000",
+        "priority": {
+          "priority": "urgent",
+          "color": "#ff0000"
+        },
+        "assignees": [{"username": "Jan"}]
+      },
+      {
+        "name": "User Authentication System",
+        "id": "task_001", 
+        "status": "in_progress",
+        "due_date": "1724778000000",
+        "priority": {
+          "priority": "high",
+          "color": "#f50000"
+        },
+        "assignees": [{"username": "Jan"}]
+      }
+    ],
+    "upcoming_deadlines": [
+      {
+        "name": "Frontend Component Library",
+        "id": "task_004",
+        "status": "in_progress",
+        "due_date": "1724950800000",
+        "priority": {
+          "priority": "high",
+          "color": "#f50000"
+        },
+        "assignees": [{"username": "Wiktor"}]
+      },
+      {
+        "name": "API Documentation Update",
+        "id": "task_007",
+        "status": "in_progress", 
+        "due_date": "1725120000000",
+        "priority": {
+          "priority": "medium",
+          "color": "#ffb400"
+        },
+        "assignees": [{"username": "Arif"}]
+      }
+    ],
+    "overdue_tasks": [
+      {
+        "name": "Database Migration Script",
+        "id": "task_008",
+        "status": "in_progress",
+        "due_date": "1724433600000",
+        "priority": {
+          "priority": "high",
+          "color": "#f50000"
+        },
+        "assignees": [{"username": "Jan"}]
+      }
+    ],
+    "high_priority_tasks": [
+      {
+        "name": "User Authentication System",
+        "id": "task_001",
+        "status": "in_progress",
+        "due_date": "1724778000000",
+        "priority": {
+          "priority": "high",
+          "color": "#f50000"
+        }
+      },
+      {
+        "name": "Frontend Component Library",
+        "id": "task_004",
+        "status": "in_progress",
+        "due_date": "1724950800000",
+        "priority": {
+          "priority": "high",
+          "color": "#f50000"
+        }
+      },
+      {
+        "name": "Payment Gateway Integration",
+        "id": "task_002",
+        "status": "in_progress",
+        "due_date": "1724864400000",
+        "priority": {
+          "priority": "urgent",
+          "color": "#ff0000"
+        }
+      }
+    ],
+    "deadline_pressure_by_member": {
+      "Jan": 9,
+      "Wiktor": 4,
+      "Arif": 2,
+      "Tricia Kennedy": 0,
+      "Calum": 0
+    }
+  },
+  "load_balance_insights": {
+    "highest_workload": {
+      "username": "Jan",
+      "score": 185.5,
+      "status": "overloaded",
+      "details": {
+        "active_tasks": 12,
+        "projects_count": 3,
+        "urgent_tasks": 2,
+        "due_soon_tasks": 3
+      }
+    },
+    "lowest_workload": {
+      "username": "Calum",
+      "score": 42.1,
+      "status": "light",
+      "details": {
+        "active_tasks": 3,
+        "projects_count": 1,
+        "urgent_tasks": 0,
+        "due_soon_tasks": 0
+      }
+    },
+    "overloaded_members": [
+      {
+        "username": "Jan",
+        "workload": {
+          "workload_score": 185.5,
+          "status": "overloaded",
+          "active_tasks": 12,
+          "urgent_tasks": 2,
+          "projects_count": 3
+        }
+      },
+      {
+        "username": "Arif",
+        "workload": {
+          "workload_score": 115.8,
+          "status": "high",
+          "active_tasks": 8,
+          "urgent_tasks": 0,
+          "projects_count": 2
+        }
+      }
+    ],
+    "available_members": [
+      {
+        "username": "Calum",
+        "workload": {
+          "workload_score": 42.1,
+          "status": "light",
+          "active_tasks": 3,
+          "urgent_tasks": 0,
+          "projects_count": 1
+        }
+      }
+    ],
+    "transfer_suggestions": [
+      {
+        "from_member": "Jan",
+        "to_member": "Calum",
+        "task": {
+          "name": "API Documentation Update",
+          "id": "task_009",
+          "priority": "medium",
+          "due_date": "1725465600000"
+        },
+        "reason": "Balance workload - Jan is overloaded, Calum has light load",
+        "impact": "Would reduce Jan's score by ~25 points"
+      },
+      {
+        "from_member": "Jan", 
+        "to_member": "Tricia Kennedy",
+        "task": {
+          "name": "User Manual Writing",
+          "id": "task_010",
+          "priority": "low",
+          "due_date": "1725984000000"
+        },
+        "reason": "Balance workload - Jan is overloaded, Tricia Kennedy has balanced load",
+        "impact": "Would reduce Jan's score by ~15 points"
+      },
+      {
+        "from_member": "Arif",
+        "to_member": "Calum", 
+        "task": {
+          "name": "Data Visualization Components",
+          "id": "task_011",
+          "priority": "medium",
+          "due_date": "1726070400000"
+        },
+        "reason": "Balance workload - Arif has high load, Calum has light load",
+        "impact": "Would reduce Arif's score by ~20 points"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "type": "workload_warning",
+      "priority": "urgent",
+      "member": "Jan",
+      "message": "Jan has overloaded workload with 12 active tasks across 3 projects, with 2 urgent tasks and 3 tasks due soon",
+      "action": "Immediately redistribute 3-4 tasks to available team members or extend critical deadlines"
+    },
+    {
+      "type": "deadline_alert",
+      "priority": "urgent",
+      "message": "2 tasks due within 24 hours, including 1 overdue task",
+      "action": "Review urgent tasks and allocate additional resources immediately"
+    },
+    {
+      "type": "workload_warning",
+      "priority": "high",
+      "member": "Arif",
+      "message": "Arif has high workload with 8 active tasks across 2 projects",
+      "action": "Consider redistributing 2-3 medium priority tasks to Calum or Tricia Kennedy"
+    },
+    {
+      "type": "project_concentration",
+      "priority": "medium",
+      "member": "Jan",
+      "message": "Jan is working on 3 different projects simultaneously",
+      "action": "Consider consolidating tasks to improve focus and reduce context switching"
+    },
+    {
+      "type": "capacity_optimization",
+      "priority": "medium", 
+      "message": "Calum has light workload and could take on additional responsibilities",
+      "action": "Assign 2-3 additional tasks from overloaded team members to Calum"
+    },
+    {
+      "type": "deadline_management",
+      "priority": "high",
+      "message": "E-commerce Website Redesign project has high deadline pressure with 8 days remaining",
+      "action": "Focus team resources on critical path items and consider deadline negotiation"
+    }
+  ],
+  "overview_stats": {
+    "total_members": 5,
+    "total_projects": 7,
+    "total_active_tasks": 33,
+    "avg_tasks_per_member": 6.6,
+    "avg_workload_score": 101.5,
+    "workload_distribution": {
+      "overloaded": 1,
+      "high": 1,
+      "balanced": 2,
+      "light": 1
+    },
+    "health_score": 68
+  },
+  "last_updated": "2025-08-17T14:47:59.608739",
+  "data_source": "clickup_live",
+  "analysis_date": "2025-08-17"
+}

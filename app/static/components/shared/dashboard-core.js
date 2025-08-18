@@ -145,7 +145,7 @@ class DashboardCore {
     },
     // In your DashboardController class
     loadComponents() {
-      // Initialize components
+      // Initialize components with safety checks
       if (typeof ClickUpAnalytics !== "undefined") {
         this.components.clickup = new ClickUpAnalytics("clickup-analytics-widget");
       }
@@ -154,9 +154,23 @@ class DashboardCore {
         this.components.projects = new ProjectsTracker("projects-tracker-widget");
       }
 
-      if (typeof WebflowImporter !== "undefined") {
-        this.components.tools = new WebflowImporter("webflow-importer-widget");
+      if (typeof PulseAnalytics !== "undefined") {
+        this.components.pulse = new PulseAnalytics("pulse-widget");
       }
+
+      if (typeof CalendarAnalytics !== "undefined") {
+        this.components.calendar = new CalendarAnalytics("calendar-analytics-widget");
+        // Make it globally accessible for date selection
+        window.calendarAnalytics = this.components.calendar;
+      }
+
+      if (typeof WebflowImporter !== "undefined") {
+        // Changed from 'webflow-importer-widget' to 'tools-widget' to match HTML structure
+        this.components.tools = new WebflowImporter("tools-widget");
+      }
+
+      // Load initial data for the active tab
+      this.refreshActiveComponent();
     },
     // Pulse animation for notifications
     pulse(element, intensity = 0.3, duration = 1000) {
