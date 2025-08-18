@@ -4,11 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SourceSelect Dashboard v16</title>
+
+    <!-- ADD THESE REACT SCRIPTS -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse_analytics/status_filters.css') }}">
+
+    <!-- ADD YOUR CALENDAR PICKER SCRIPT -->
+    <script src="{{ url_for('static', filename='components/global_calendar_picker/GlobalCalendarPicker.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse_analytics/pulse_analytics_clickable.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/shared/dashboard-core.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/projects_tracker/projects_tracker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/clickup_analytics/clickup_analytics.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/calendar_analytics/calendar_analytics.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse/pulse.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/tools/webflow_importer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/global_calendar_picker/calendar_picker.css') }}">
   
 </head>
 <body>
@@ -38,6 +49,7 @@
 
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
+            <button class="nav-tab" data-tab="pulse">Pulse</button>
             <button class="nav-tab" data-tab="clickup">ClickUp Analytics</button>
             <button class="nav-tab active" data-tab="projects">Project Tracker</button>
             <button class="nav-tab" data-tab="calendar">Calendar Dashboard</button>
@@ -46,6 +58,13 @@
 
         <!-- Tab Content Container -->
         <div class="tab-content-container">
+
+            <!-- Pulse Widget -->
+            <div class="tab-content" id="pulse-tab">
+                <div id="pulse-widget"></div>
+            </div>
+
+
             <!-- ClickUp Analytics Widget -->
             <div class="tab-content" id="clickup-tab">
                 <div id="clickup-analytics-widget"></div>
@@ -303,10 +322,14 @@
     </div>
 
     <!-- Core Dashboard Scripts -->
+    <!-- <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="{{ url_for('static', filename='components/global_calendar_picker/GlobalCalendarPicker.js') }}"></script> -->
     <script src="{{ url_for('static', filename='components/shared/dashboard-core.js') }}"></script>
 
     <!-- Component Scripts -->
     <script src="{{ url_for('static', filename='components/clickup_analytics/clickup_analytics.js') }}"></script>
+    <script src="{{ url_for('static', filename='components/pulse/pulse.js') }}"></script>
     <script src="{{ url_for('static', filename='components/projects_tracker/projects_tracker.js') }}"></script>
     <script src="{{ url_for('static', filename='components/calendar_analytics/calendar_analytics.js') }}"></script>
     <script src="{{ url_for('static', filename='components/tools/webflow_importer.js') }}"></script>
@@ -413,14 +436,19 @@
                 this.refreshActiveComponent();
             }
 
+
             loadComponents() {
-                // Initialize components
+                // Initialize components with safety checks
                 if (typeof ClickUpAnalytics !== 'undefined') {
                     this.components.clickup = new ClickUpAnalytics('clickup-analytics-widget');
                 }
                 
                 if (typeof ProjectsTracker !== 'undefined') {
                     this.components.projects = new ProjectsTracker('projects-tracker-widget');
+                }
+
+                if (typeof PulseAnalytics !== "undefined") {
+                    this.components.pulse = new PulseAnalytics("pulse-widget");
                 }
 
                 if (typeof CalendarAnalytics !== 'undefined') {
@@ -430,8 +458,12 @@
                 }
                 
                 if (typeof WebflowImporter !== 'undefined') {
-                    this.components.tools = new WebflowImporter('webflow-importer-widget');
+                    // Changed from 'webflow-importer-widget' to 'tools-widget' to match HTML structure
+                    this.components.tools = new WebflowImporter('tools-widget');
                 }
+
+                // Load initial data for the active tab
+                this.refreshActiveComponent();
             }
 
             refreshComponent(componentName) {
@@ -440,6 +472,7 @@
                     component.refresh();
                 }
             }
+
 
             refreshActiveComponent() {
                 this.refreshComponent(this.activeTab);

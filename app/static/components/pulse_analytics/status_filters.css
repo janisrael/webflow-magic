@@ -1,0 +1,313 @@
+/* Status Filters Section Styles */
+
+.status-filters-section {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+    border: 1px solid #334155;
+    color: white;
+  }
+  
+  .status-filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #475569;
+  }
+  
+  .status-filters-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  
+  .filter-count {
+    font-size: 14px;
+    font-weight: normal;
+    opacity: 0.7;
+    margin-left: 8px;
+  }
+  
+  .status-filters-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .filter-action-btn {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .filter-action-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  .filter-action-btn:active {
+    transform: translateY(0);
+  }
+  
+  /* Status Filters Grid */
+  .status-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  /* Individual Status Filter Item */
+  .status-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 2px solid #475569;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .status-filter-item:hover {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: #64748b;
+    transform: translateY(-1px);
+  }
+  
+  .status-filter-item.checked {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+  }
+  
+  .status-filter-item.checked::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #3b82f6;
+  }
+  
+  /* Custom Checkbox */
+  .status-filter-checkbox {
+    display: none; /* Hide default checkbox */
+  }
+  
+  .status-filter-checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #64748b;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  
+  .status-filter-item.checked .status-filter-checkmark {
+    background: #3b82f6;
+    border-color: #3b82f6;
+  }
+  
+  .status-filter-item.checked .status-filter-checkmark::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  /* Status Filter Labels */
+  .status-filter-label {
+    font-weight: 500;
+    color: #e2e8f0;
+    flex: 1;
+    font-size: 14px;
+  }
+  
+  .status-filter-badge {
+    background: #475569;
+    color: #cbd5e1;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: lowercase;
+    border: 1px solid #64748b;
+  }
+  
+  .status-filter-item.checked .status-filter-badge {
+    background: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+  }
+  
+  /* Status-specific styling */
+  .status-filter-item[data-status="to do"] .status-filter-badge {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+  }
+  
+  .status-filter-item[data-status="planning"] .status-filter-badge {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+  }
+  
+  .status-filter-item[data-status="in progress"] .status-filter-badge {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+  }
+  
+  .status-filter-item[data-status="bugs"] .status-filter-badge {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+  }
+  
+  .status-filter-item[data-status="for qa"] .status-filter-badge {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+  }
+  
+  .status-filter-item[data-status="for viewing"] .status-filter-badge {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
+  
+  .status-filter-item[data-status="grammar"] .status-filter-badge {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+  }
+  
+  /* Status Filters Info */
+  .status-filters-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #475569;
+  }
+  
+  .filter-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+  
+  .filter-info-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .status-filters-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .status-filters-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    
+    .status-filters-actions {
+      width: 100%;
+      justify-content: stretch;
+    }
+    
+    .filter-action-btn {
+      flex: 1;
+      text-align: center;
+    }
+    
+    .status-filter-item {
+      padding: 10px;
+    }
+  }
+  
+  /* Animation for filter changes */
+  .status-filter-item {
+    animation: filterSlideIn 0.3s ease-out;
+  }
+  
+  @keyframes filterSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Loading state for filters */
+  .status-filters-loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  .status-filters-loading .status-filter-item {
+    animation: filterPulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes filterPulse {
+    0%, 100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+  
+  /* Enhanced hover effects */
+  .status-filter-item:hover .status-filter-checkmark {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+  
+  .status-filter-item:hover .status-filter-label {
+    color: #f1f5f9;
+  }
+  
+  /* Focus styles for accessibility */
+  .status-filter-item:focus-within {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+  
+  /* Subtle animation for checked state */
+  .status-filter-item.checked {
+    animation: checkSlideIn 0.2s ease-out;
+  }
+  
+  @keyframes checkSlideIn {
+    from {
+      background: rgba(15, 23, 42, 0.5);
+      border-color: #475569;
+    }
+    to {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
+    }
+  }

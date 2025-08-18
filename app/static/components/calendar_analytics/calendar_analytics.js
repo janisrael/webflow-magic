@@ -12,7 +12,7 @@ class CalendarAnalytics {
     this.viewMode = "month";
     this.showClickUpTasks = true;
     this.showGoogleEvents = true;
-
+    this.isCalendarPickerOpen = false;
     // Sample Google Calendar events - replace with real API data
     this.googleEvents = [
       {
@@ -54,6 +54,40 @@ class CalendarAnalytics {
     this.container.innerHTML = this.getTemplate();
     this.renderCalendar();
     this.renderSidebar();
+  }
+
+  renderCalendarPicker() {
+    if (this.isCalendarPickerOpen && window.GlobalCalendarPicker) {
+      // Create React element and render it
+      const calendarElement = React.createElement(window.GlobalCalendarPicker, {
+        selectedDate: this.selectedDate,
+        onDateSelect: (date) => {
+          this.selectedDate = date;
+          this.isCalendarPickerOpen = false;
+          this.selectDate(date); // Your existing method
+          this.removeCalendarPicker();
+        },
+        onClose: () => {
+          this.isCalendarPickerOpen = false;
+          this.removeCalendarPicker();
+        },
+        isOpen: this.isCalendarPickerOpen,
+      });
+
+      // Render to a container
+      const calendarContainer = document.createElement("div");
+      calendarContainer.id = "calendar-picker-container";
+      document.body.appendChild(calendarContainer);
+      ReactDOM.render(calendarElement, calendarContainer);
+    }
+  }
+
+  removeCalendarPicker() {
+    const container = document.getElementById("calendar-picker-container");
+    if (container) {
+      ReactDOM.unmountComponentAtNode(container);
+      container.remove();
+    }
   }
 
   getTemplate() {
@@ -183,6 +217,12 @@ class CalendarAnalytics {
       this.renderCalendar();
       this.renderSidebar();
     });
+
+    if (document.getElementById("dateFilter")) {
+      document.getElementById("dateFilter").addEventListener("click", () => {
+        this.openCalendarPicker();
+      });
+    }
 
     // Filter toggles
     document.getElementById("showClickUp").addEventListener("change", (e) => {
@@ -356,6 +396,11 @@ class CalendarAnalytics {
 
     // Update quick stats
     this.updateQuickStats();
+  }
+
+  openCalendarPicker() {
+    this.isCalendarPickerOpen = true;
+    this.renderCalendarPicker();
   }
 
   loadClickUpTasks() {
