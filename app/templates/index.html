@@ -37,6 +37,27 @@
                     <div class="live-dot"></div>
                     Live Data
                 </div>
+
+                <div class="header-actions">
+                    <!-- Settings Button -->
+                    <button class="header-action-btn" id="settings-btn" title="Settings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6"></path>
+                            <path d="M1 12h6m6 0h6"></path>
+                            <path d="M4.22 4.22l1.42 1.42m0 12.72l-1.42 1.42M19.78 4.22l-1.42 1.42m0 12.72l1.42 1.42"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- User Profile Button -->
+                    <button class="user-avatar-btn" id="user-btn" title="User Profile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="notification-badge">3</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -337,198 +358,302 @@
 
     <!-- Main Dashboard Controller -->
     <script>
-        class DashboardController {
-            constructor() {
-                this.activeTab = 'projects';
-                this.components = {};
-                this.init();
-            }
+        // Updated Dashboard Controller - No Auto Data Loading
+class DashboardController {
+    constructor() {
+        this.activeTab = 'projects';
+        this.components = {};
+        this.init();
+    }
 
-            init() {
-                this.setupTabNavigation();
-                this.setupDateFilters();
-                this.loadComponents();
-                this.updateTimestamp();
-            }
+    init() {
+        this.setupTabNavigation();
+        this.setupDateFilters();
+        this.loadComponents();
+        this.updateTimestamp();
+    }
+
+    setupTabNavigation() {
+        const tabButtons = document.querySelectorAll('.nav-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.dataset.tab;
+                this.switchTab(targetTab, tabButtons, tabContents);
+            });
+        });
+    }
+
+    switchTab(targetTab, tabButtons, tabContents) {
+        // Update active tab button
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`[data-tab="${targetTab}"]`).classList.add('active');
+        
+        // Update active tab content with animation
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+            content.style.opacity = '0';
+        });
+        
+        setTimeout(() => {
+            const targetContent = document.getElementById(`${targetTab}-tab`);
+            targetContent.classList.add('active');
+            targetContent.style.opacity = '1';
             
+            // REMOVED: Automatic component refresh
+            // this.refreshComponent(targetTab);
+            
+            // NEW: Only refresh component UI without loading data
+            this.refreshComponentUI(targetTab);
+        }, 150);
 
-            setupTabNavigation() {
-                const tabButtons = document.querySelectorAll('.nav-tab');
-                const tabContents = document.querySelectorAll('.tab-content');
+        this.activeTab = targetTab;
+    }
 
-                tabButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const targetTab = button.dataset.tab;
-                        this.switchTab(targetTab, tabButtons, tabContents);
-                    });
-                });
-            }
+    setupDateFilters() {
+        const filterButtons = document.querySelectorAll('.filter-btn[data-period]');
+        const dateInput = document.getElementById('dateFilter');
 
-            switchTab(targetTab, tabButtons, tabContents) {
-                // Update active tab button
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                document.querySelector(`[data-tab="${targetTab}"]`).classList.add('active');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const period = button.dataset.period;
                 
-                // Update active tab content with animation
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                    content.style.opacity = '0';
-                });
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
                 
-                setTimeout(() => {
-                    const targetContent = document.getElementById(`${targetTab}-tab`);
-                    targetContent.classList.add('active');
-                    targetContent.style.opacity = '1';
-                    
-                    // Trigger component refresh if needed
-                    this.refreshComponent(targetTab);
-                }, 150);
-
-                this.activeTab = targetTab;
-            }
-
-            setupDateFilters() {
-                const filterButtons = document.querySelectorAll('.filter-btn[data-period]');
-                const dateInput = document.getElementById('dateFilter');
-
-                filterButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        filterButtons.forEach(btn => btn.classList.remove('active'));
-                        button.classList.add('active');
-                        
-                        const period = button.dataset.period;
-                        this.updateDateFilter(period);
-                    });
-                });
-
-                dateInput.addEventListener('change', (e) => {
-                    this.updateCustomDate(e.target.value);
-                });
-            }
-
-            updateDateFilter(period) {
-                const now = new Date();
-                let targetDate;
-
+                // Update date input based on period
+                const today = new Date();
+                let targetDate = today;
+                
                 switch(period) {
                     case 'yesterday':
-                        targetDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-                        break;
-                    case 'today':
-                        targetDate = now;
+                        targetDate.setDate(today.getDate() - 1);
                         break;
                     case 'week':
-                        targetDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        targetDate.setDate(today.getDate() - 7);
+                        break;
+                    case 'today':
+                    default:
+                        // Keep today
                         break;
                 }
-
-                if (targetDate) {
-                    document.getElementById('dateFilter').value = targetDate.toISOString().split('T')[0];
-                    this.refreshActiveComponent();
-                }
-            }
-
-            updateCustomDate(dateValue) {
-                // Remove active class from period buttons
-                document.querySelectorAll('.filter-btn[data-period]').forEach(btn => 
-                    btn.classList.remove('active')
-                );
                 
-                this.refreshActiveComponent();
-            }
-
-
-            loadComponents() {
-                // Initialize components with safety checks
-                if (typeof ClickUpAnalytics !== 'undefined') {
-                    this.components.clickup = new ClickUpAnalytics('clickup-analytics-widget');
+                if (dateInput) {
+                    dateInput.value = targetDate.toISOString().split('T')[0];
                 }
                 
-                if (typeof ProjectsTracker !== 'undefined') {
-                    this.components.projects = new ProjectsTracker('projects-tracker-widget');
-                }
+                // Notify active component of date change without auto-loading
+                this.notifyDateChange(targetDate);
+            });
+        });
 
-                if (typeof PulseAnalytics !== "undefined") {
-                    this.components.pulse = new PulseAnalytics("pulse-widget");
-                }
-
-                if (typeof CalendarAnalytics !== 'undefined') {
-                    this.components.calendar = new CalendarAnalytics('calendar-analytics-widget');
-                    // Make it globally accessible for date selection
-                    window.calendarAnalytics = this.components.calendar;
+        if (dateInput) {
+            dateInput.addEventListener('change', (e) => {
+                // Update filter buttons
+                const selectedDate = new Date(e.target.value);
+                const today = new Date().toISOString().split('T')[0];
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                if (e.target.value === today) {
+                    document.querySelector('[data-period="today"]')?.classList.add('active');
+                } else if (e.target.value === yesterdayStr) {
+                    document.querySelector('[data-period="yesterday"]')?.classList.add('active');
                 }
                 
-                if (typeof WebflowImporter !== 'undefined') {
-                    // Changed from 'webflow-importer-widget' to 'tools-widget' to match HTML structure
-                    this.components.tools = new WebflowImporter('tools-widget');
-                }
+                this.notifyDateChange(selectedDate);
+            });
+        }
+    }
 
-                // Load initial data for the active tab
-                this.refreshActiveComponent();
-            }
-
-            refreshComponent(componentName) {
-                const component = this.components[componentName];
-                if (component && typeof component.refresh === 'function') {
-                    component.refresh();
-                }
-            }
-
-
-            refreshActiveComponent() {
-                this.refreshComponent(this.activeTab);
-            }
-
-            updateTimestamp() {
-                const now = new Date();
-                const timestamp = now.toLocaleString('en-US', {
-                    month: 'numeric',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: true
-                });
-                
-                document.getElementById('lastUpdated').textContent = timestamp;
-                
-                // Update every 30 seconds
-                setTimeout(() => this.updateTimestamp(), 30000);
-            }
+    loadComponents() {
+        // Initialize all components but don't load their data
+        if (typeof PulseAnalytics !== 'undefined') {
+            this.components.pulse = new PulseAnalytics('pulse-widget');
+        }
+        
+        if (typeof ClickUpAnalytics !== 'undefined') {
+            this.components.clickup = new ClickUpAnalytics('clickup-analytics-widget');
+        }
+        
+        if (typeof ProjectsTracker !== 'undefined') {
+            this.components.projects = new ProjectsTracker('projects-tracker-widget');
+        }
+        
+        if (typeof CalendarAnalytics !== 'undefined') {
+            this.components.calendar = new CalendarAnalytics('calendar-analytics-widget');
+            window.calendarAnalytics = this.components.calendar;
+        }
+        
+        if (typeof WebflowImporter !== 'undefined') {
+            this.components.tools = new WebflowImporter('tools-widget');
         }
 
-        // Initialize dashboard when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            window.dashboard = new DashboardController();
-        });
+        // Load initial data only for the active tab's component if it has auto-load enabled
+        this.loadInitialActiveComponent();
+    }
 
-        // Enhanced toggle handlers
-        document.addEventListener('DOMContentLoaded', function() {
-          // CMS Toggle
-          const cmsToggle = document.getElementById('enable-cms');
-          const cmsFields = document.getElementById('cms-fields');
+    // NEW: Only refresh UI without loading data
+    refreshComponentUI(componentName) {
+        const component = this.components[componentName];
+        if (component) {
+            // Check if component has a refreshUI method (for non-data updates)
+            if (typeof component.refreshUI === 'function') {
+                component.refreshUI();
+            }
+            // For pulse component, just ensure it shows the initial state
+            else if (componentName === 'pulse' && typeof component.renderInitialState === 'function') {
+                component.renderInitialState();
+            }
+            // For other components, only refresh if they already have data
+            else if (typeof component.refresh === 'function' && component.dataLoaded) {
+                component.refresh();
+            }
+        }
+    }
 
-          if (cmsToggle && cmsFields) {
-            cmsFields.style.display = cmsToggle.checked ? 'block' : 'none';
+    // UPDATED: Only auto-load for components that should auto-load (not pulse)
+    loadInitialActiveComponent() {
+        const activeComponent = this.components[this.activeTab];
+        if (activeComponent) {
+            // Only auto-load for specific components (not pulse)
+            if (this.activeTab !== 'pulse' && typeof activeComponent.loadData === 'function') {
+                activeComponent.loadData();
+            }
+            // For pulse, just ensure initial state is rendered
+            else if (this.activeTab === 'pulse' && typeof activeComponent.renderInitialState === 'function') {
+                activeComponent.renderInitialState();
+            }
+        }
+    }
+
+    // UPDATED: Manual refresh method (can be called by user action)
+    refreshComponent(componentName) {
+        const component = this.components[componentName];
+        if (component && typeof component.refresh === 'function') {
+            component.refresh();
+        }
+    }
+
+    refreshActiveComponent() {
+        this.refreshComponent(this.activeTab);
+    }
+
+    // NEW: Notify components of date changes without forcing data load
+    notifyDateChange(date) {
+        const activeComponent = this.components[this.activeTab];
+        if (activeComponent) {
+            // Update component's selected date if it has that property
+            if (activeComponent.selectedDate !== undefined) {
+                activeComponent.selectedDate = date.toISOString().split('T')[0];
+            }
             
-            cmsToggle.addEventListener('change', function() {
-              cmsFields.style.display = this.checked ? 'block' : 'none';
-            });
-          }
-          
-          // SEO Toggle
-          const seoToggle = document.getElementById('enable-seo');
-          const seoFields = document.getElementById('seo-fields');
+            // Update date picker if component has one
+            if (typeof activeComponent.updateDateDisplay === 'function') {
+                activeComponent.updateDateDisplay();
+            }
+        }
+    }
 
-          if (seoToggle && seoFields) {
-            seoFields.style.display = seoToggle.checked ? 'block' : 'none';
-            
-            seoToggle.addEventListener('change', function() {
-              seoFields.style.display = this.checked ? 'block' : 'none';
-            });
-          }
+    updateTimestamp() {
+        const now = new Date();
+        const timestamp = now.toLocaleString('en-US', {
+            month: 'numeric',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
         });
+        
+        const lastUpdatedElement = document.getElementById('lastUpdated');
+        if (lastUpdatedElement) {
+            lastUpdatedElement.textContent = timestamp;
+        }
+        
+        // Update every 30 seconds
+        setTimeout(() => this.updateTimestamp(), 30000);
+    }
+
+    // NEW: Manual data loading methods for user-triggered actions
+    loadComponentData(componentName) {
+        const component = this.components[componentName];
+        if (component && typeof component.loadData === 'function') {
+            component.loadData();
+        }
+    }
+
+    loadActiveComponentData() {
+        this.loadComponentData(this.activeTab);
+    }
+
+    // NEW: Global refresh button functionality
+    refreshAll() {
+        Object.keys(this.components).forEach(componentName => {
+            const component = this.components[componentName];
+            if (component && typeof component.refresh === 'function' && component.dataLoaded) {
+                component.refresh();
+            }
+        });
+    }
+}
+
+// Initialize dashboard when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.dashboard = new DashboardController();
+    
+    // Optional: Add global keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + R to refresh active component
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            e.preventDefault();
+            if (window.dashboard) {
+                window.dashboard.refreshActiveComponent();
+            }
+        }
+        
+        // Ctrl/Cmd + Shift + R to refresh all components
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+            e.preventDefault();
+            if (window.dashboard) {
+                window.dashboard.refreshAll();
+            }
+        }
+    });
+});
+
+// Enhanced toggle handlers (keep your existing code)
+document.addEventListener('DOMContentLoaded', function() {
+    // CMS Toggle
+    const cmsToggle = document.getElementById('enable-cms');
+    const cmsFields = document.getElementById('cms-fields');
+
+    if (cmsToggle && cmsFields) {
+        cmsFields.style.display = cmsToggle.checked ? 'block' : 'none';
+        
+        cmsToggle.addEventListener('change', function() {
+            cmsFields.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // SEO Toggle
+    const seoToggle = document.getElementById('enable-seo');
+    const seoFields = document.getElementById('seo-fields');
+
+    if (seoToggle && seoFields) {
+        seoFields.style.display = seoToggle.checked ? 'block' : 'none';
+        
+        seoToggle.addEventListener('change', function() {
+            seoFields.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+});
     </script>
     
     <style>

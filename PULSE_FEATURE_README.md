@@ -61,6 +61,39 @@ app/
     └── index.html               # Updated with Pulse tab
 ```
 
+
+
+app/
+├── output/
+│   └── pulse/                    # Generated JSON files stored here
+│       └── pulse_YYYYMMDD_HHMM.json
+    └── seo-reports/                   
+│       └── themename_date
+            SEO-OPTIMIZATION-REPORT.html
+├── services/
+│   ├── __init__.py
+|   |── pulse
+│   |  ├── pulse_service.py          # Main pulse service
+│   |  └── clickup_pulse_integration.py  # ClickUp API integration
+|   |__ tools
+|   |   |── wf-wp-converter
+|   |
+|   |── Calendar
+|   |
+|   |── KPI (clickup analytics)
+|   |── project tracker
+|
+|
+├── static/
+│   └── components/
+│       └── pulse/
+│           ├── pulse.css         # Pulse styling
+│           └── pulse.js          # Pulse functionality
+└── templates/
+    └── index.html               # Updated with Pulse tab
+main.py
+
+
 ## How It Works
 
 ### 1. **Data Caching (3-hour intervals)**

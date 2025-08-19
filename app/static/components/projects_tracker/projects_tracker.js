@@ -279,7 +279,7 @@ class ProjectsTracker {
                                 <span class="toggle-text">User View</span>
                             </label>
                             
-                            <div class="toggle-slider"></div>
+                            <div class="toggle-slider-btnstyle"></div>
                         </div>
                     </div>
 
