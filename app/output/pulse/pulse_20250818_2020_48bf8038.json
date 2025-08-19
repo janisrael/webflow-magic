@@ -1,0 +1,503 @@
+{
+  "member_workloads": {
+    "Arif": {
+      "username": "Arif",
+      "active_tasks": 5,
+      "projects_count": 0,
+      "projects": [],
+      "tasks": [
+        {
+          "name": "Change Photoes",
+          "id": "86aav2jk4",
+          "status": "in progress",
+          "due_date": null,
+          "priority": null
+        },
+        {
+          "name": "create responsive content sizes",
+          "id": "86aamn6n2",
+          "status": "in progress",
+          "due_date": null,
+          "priority": null
+        },
+        {
+          "name": "create __pre variables and values",
+          "id": "86aamn6cw",
+          "status": "in progress",
+          "due_date": null,
+          "priority": null
+        },
+        {
+          "name": "Elementor removal for websites",
+          "id": "86aaabkkn",
+          "status": "planning",
+          "due_date": null,
+          "priority": {
+            "color": "#f8ae00",
+            "id": "2",
+            "orderindex": "2",
+            "priority": "high"
+          }
+        },
+        {
+          "name": "Create category for portfolio on source select website",
+          "id": "86aaabqqt",
+          "status": "to do",
+          "due_date": null,
+          "priority": {
+            "color": "#d8d8d8",
+            "id": "4",
+            "orderindex": "4",
+            "priority": "low"
+          }
+        }
+      ],
+      "total_time_estimate": 0,
+      "total_time_spent": 0,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 1,
+      "due_soon_tasks": 0,
+      "workload_score": 60,
+      "status": "high",
+      "remaining_time": 0,
+      "downtime_hours": 0
+    },
+    "Jan": {
+      "username": "Jan",
+      "active_tasks": 13,
+      "projects_count": 0,
+      "projects": [],
+      "tasks": [
+        {
+          "name": "(Milestone)Planning",
+          "id": "86aae99mz",
+          "status": "to do",
+          "due_date": null,
+          "priority": null
+        },
+        {
+          "name": "(Milestone)Convert & Setup CMS",
+          "id": "86aae99my",
+          "status": "to do",
+          "due_date": null,
+          "priority": null
+        },
+        {
+          "name": "(Milestone)Design & Implementation",
+          "id": "86aae99mv",
+          "status": "to do",
+          "due_date": null,
+          "priority": null
+        },
+        {
+          "name": "(Milestone)Testing & Launch",
+          "id": "86aae99mw",
+          "status": "to do",
+          "due_date": null,
+          "priority": null
+        },
+        {
+          "name": "Email notification design",
+          "id": "86aa4x0kp",
+          "status": "to do",
+          "due_date": null,
+          "priority": null
+        },
+        {
+          "name": "Add Delete ticket capability",
+          "id": "86a9z9qpf",
+          "status": "in progress",
+          "due_date": null,
+          "priority": {
+            "color": "#d8d8d8",
+            "id": "4",
+            "orderindex": "4",
+            "priority": "low"
+          }
+        },
+        {
+          "name": "Add manual upload option",
+          "id": "86a9z9q99",
+          "status": "to do",
+          "due_date": null,
+          "priority": {
+            "color": "#d8d8d8",
+            "id": "4",
+            "orderindex": "4",
+            "priority": "low"
+          }
+        },
+        {
+          "name": "Override Data Entry point",
+          "id": "86a9z7hxp",
+          "status": "to do",
+          "due_date": null,
+          "priority": {
+            "color": "#d8d8d8",
+            "id": "4",
+            "orderindex": "4",
+            "priority": "low"
+          }
+        },
+        {
+          "name": "Subscription",
+          "id": "86a9qb4ew",
+          "status": "bugs",
+          "due_date": null,
+          "priority": {
+            "color": "#f8ae00",
+            "id": "2",
+            "orderindex": "2",
+            "priority": "high"
+          }
+        },
+        {
+          "name": "Organization payment",
+          "id": "86aaazhku",
+          "status": "in progress",
+          "due_date": null,
+          "priority": {
+            "color": "#f8ae00",
+            "id": "2",
+            "orderindex": "2",
+            "priority": "high"
+          }
+        },
+        {
+          "name": "MileStone(Organizer side)",
+          "id": "86aa5tz1e",
+          "status": "in progress",
+          "due_date": "1754042400000",
+          "priority": null
+        },
+        {
+          "name": "Elementor removal for websites",
+          "id": "86aaabkkn",
+          "status": "planning",
+          "due_date": null,
+          "priority": {
+            "color": "#f8ae00",
+            "id": "2",
+            "orderindex": "2",
+            "priority": "high"
+          }
+        },
+        {
+          "name": "Create category for portfolio on source select website",
+          "id": "86aaabqqt",
+          "status": "to do",
+          "due_date": null,
+          "priority": {
+            "color": "#d8d8d8",
+            "id": "4",
+            "orderindex": "4",
+            "priority": "low"
+          }
+        }
+      ],
+      "total_time_estimate": 3360.0,
+      "total_time_spent": 0,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 3,
+      "due_soon_tasks": 0,
+      "workload_score": 100,
+      "status": "overloaded",
+      "remaining_time": 0,
+      "downtime_hours": 0
+    }
+  },
+  "project_analytics": {
+    "901317175058": {
+      "name": "Yawd Vibze Konnections",
+      "original_name": "Yawd Vibze Konnections",
+      "folder_name": null,
+      "folder_id": null,
+      "active_tasks": 1,
+      "assigned_members": [
+        "Arif"
+      ],
+      "member_count": 1,
+      "total_time_estimate": 0,
+      "due_date": null,
+      "priority": "normal",
+      "status": null,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 0
+    },
+    "901308890006": {
+      "name": "BPPS",
+      "original_name": "BPPS",
+      "folder_name": null,
+      "folder_id": null,
+      "active_tasks": 23,
+      "assigned_members": [
+        "Wiktor"
+      ],
+      "member_count": 1,
+      "total_time_estimate": 0,
+      "due_date": null,
+      "priority": "normal",
+      "status": null,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 0
+    },
+    "901308907495": {
+      "name": "Davids Drapery",
+      "original_name": "Davids Drapery",
+      "folder_name": null,
+      "folder_id": null,
+      "active_tasks": 1,
+      "assigned_members": [
+        "Wiktor"
+      ],
+      "member_count": 1,
+      "total_time_estimate": 0,
+      "due_date": null,
+      "priority": "normal",
+      "status": null,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 0
+    },
+    "901316830391": {
+      "name": "xyz",
+      "original_name": "xyz",
+      "folder_name": null,
+      "folder_id": null,
+      "active_tasks": 4,
+      "assigned_members": [
+        "Jan"
+      ],
+      "member_count": 1,
+      "total_time_estimate": 3360.0,
+      "due_date": null,
+      "priority": "normal",
+      "status": null,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 0
+    },
+    "901310471238": {
+      "name": "TheSantris / Lotto (P1)",
+      "original_name": "Lotto (P1)",
+      "folder_name": "TheSantris",
+      "folder_id": "901310157028",
+      "active_tasks": 5,
+      "assigned_members": [
+        "Jan"
+      ],
+      "member_count": 1,
+      "total_time_estimate": 0,
+      "due_date": null,
+      "priority": "medium",
+      "status": {
+        "status": "red",
+        "color": "#d33d44",
+        "hide_label": true
+      },
+      "urgent_tasks": 0,
+      "high_priority_tasks": 1
+    },
+    "901316015605": {
+      "name": "TheSantris / The Vault (P2)",
+      "original_name": "The Vault (P2)",
+      "folder_name": "TheSantris",
+      "folder_id": "901310157028",
+      "active_tasks": 2,
+      "assigned_members": [
+        "Jan"
+      ],
+      "member_count": 1,
+      "total_time_estimate": 0,
+      "due_date": "2025-08-01T04:00:00",
+      "priority": "medium",
+      "status": {
+        "status": "yellow",
+        "color": "#f8ae00",
+        "hide_label": true
+      },
+      "urgent_tasks": 0,
+      "high_priority_tasks": 1
+    },
+    "901317174711": {
+      "name": "Maintenance & Upgrades / Universal template for websites",
+      "original_name": "Universal template for websites",
+      "folder_name": "Maintenance & Upgrades",
+      "folder_id": "901310545771",
+      "active_tasks": 2,
+      "assigned_members": [
+        "Arif"
+      ],
+      "member_count": 1,
+      "total_time_estimate": 0,
+      "due_date": null,
+      "priority": "normal",
+      "status": {
+        "status": "yellow",
+        "color": "#f8ae00",
+        "hide_label": true
+      },
+      "urgent_tasks": 0,
+      "high_priority_tasks": 0
+    },
+    "901316505041": {
+      "name": "Maintenance & Upgrades / Wordpress Elementor Removal",
+      "original_name": "Wordpress Elementor Removal",
+      "folder_name": "Maintenance & Upgrades",
+      "folder_id": "901310545771",
+      "active_tasks": 1,
+      "assigned_members": [
+        "Wiktor",
+        "Jan",
+        "Arif"
+      ],
+      "member_count": 3,
+      "total_time_estimate": 0,
+      "due_date": null,
+      "priority": "high",
+      "status": null,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 1
+    },
+    "901316505194": {
+      "name": "Maintenance & Upgrades / Setup portfolio categories",
+      "original_name": "Setup portfolio categories",
+      "folder_name": "Maintenance & Upgrades",
+      "folder_id": "901310545771",
+      "active_tasks": 1,
+      "assigned_members": [
+        "Jan",
+        "Arif"
+      ],
+      "member_count": 2,
+      "total_time_estimate": 0,
+      "due_date": null,
+      "priority": "normal",
+      "status": null,
+      "urgent_tasks": 0,
+      "high_priority_tasks": 0
+    }
+  },
+  "timeline_analysis": {
+    "urgent_deadlines": [],
+    "upcoming_deadlines": [],
+    "overdue_tasks": [
+      {
+        "task": {
+          "name": "MileStone(Organizer side)",
+          "id": "86aa5tz1e",
+          "status": "in progress",
+          "due_date": "1754042400000",
+          "priority": null
+        },
+        "assignee": "Jan",
+        "days_until_due": -18
+      }
+    ],
+    "high_priority_tasks": [
+      {
+        "task": {
+          "name": "Subscription",
+          "id": "86a9qb4ew",
+          "status": "bugs",
+          "due_date": null,
+          "priority": {
+            "color": "#f8ae00",
+            "id": "2",
+            "orderindex": "2",
+            "priority": "high"
+          }
+        },
+        "assignee": "Jan"
+      },
+      {
+        "task": {
+          "name": "Organization payment",
+          "id": "86aaazhku",
+          "status": "in progress",
+          "due_date": null,
+          "priority": {
+            "color": "#f8ae00",
+            "id": "2",
+            "orderindex": "2",
+            "priority": "high"
+          }
+        },
+        "assignee": "Jan"
+      },
+      {
+        "task": {
+          "name": "Elementor removal for websites",
+          "id": "86aaabkkn",
+          "status": "planning",
+          "due_date": null,
+          "priority": {
+            "color": "#f8ae00",
+            "id": "2",
+            "orderindex": "2",
+            "priority": "high"
+          }
+        },
+        "assignee": "Arif"
+      },
+      {
+        "task": {
+          "name": "Elementor removal for websites",
+          "id": "86aaabkkn",
+          "status": "planning",
+          "due_date": null,
+          "priority": {
+            "color": "#f8ae00",
+            "id": "2",
+            "orderindex": "2",
+            "priority": "high"
+          }
+        },
+        "assignee": "Jan"
+      }
+    ],
+    "deadline_pressure_by_member": {
+      "Arif": 0,
+      "Jan": 5
+    }
+  },
+  "load_balance_insights": {
+    "highest_workload": "Jan",
+    "lowest_workload": "Arif",
+    "overloaded_members": [
+      "Jan"
+    ],
+    "available_members": [],
+    "transfer_suggestions": []
+  },
+  "overview_stats": {
+    "total_members": 2,
+    "total_projects": 9,
+    "total_active_tasks": 40,
+    "avg_tasks_per_member": 20.0,
+    "avg_workload_score": 80.0,
+    "health_score": 20.0
+  },
+  "recommendations": [
+    {
+      "type": "workload_balance",
+      "priority": "high",
+      "title": "Address Overloaded Team Members",
+      "description": "1 team members are overloaded: Jan",
+      "action": "Consider redistributing tasks or extending deadlines"
+    },
+    {
+      "type": "overdue_tasks",
+      "priority": "high",
+      "title": "Overdue Tasks Need Attention",
+      "description": "1 tasks are overdue",
+      "action": "Address these tasks immediately or update their deadlines"
+    }
+  ],
+  "last_updated": "2025-08-18T20:20:39.036164",
+  "data_source": "clickup_api_multi_space",
+  "analysis_date": "2025-08-18",
+  "cache_info": {
+    "generated_fresh": true,
+    "filter_hash": "48bf8038",
+    "generation_time": "2025-08-18T20:20:39.036184"
+  }
+}
