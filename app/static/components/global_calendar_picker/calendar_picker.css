@@ -1,0 +1,289 @@
+/* ===========================================
+   GLOBAL CALENDAR PICKER STYLES
+   =========================================== */
+
+/* Overlay */
+.calendar-picker-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  
+  /* Main Calendar Container */
+  .calendar-picker-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 24px;
+    width: 384px;
+    max-width: calc(100vw - 32px);
+    margin: 0 16px;
+    animation: calendar-popup 0.2s ease-out;
+  }
+  
+  @keyframes calendar-popup {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  /* Header */
+  .calendar-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .calendar-picker-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .calendar-picker-icon {
+    width: 20px;
+    height: 20px;
+    color: #2563eb;
+    font-size: 20px;
+  }
+  
+  .calendar-picker-heading {
+    fontSize: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+  }
+  
+  .calendar-picker-close {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.2s ease;
+  }
+  
+  .calendar-picker-close:hover {
+    color: #4b5563;
+  }
+  
+  /* Month Navigation */
+  .calendar-picker-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .calendar-picker-nav-btn {
+    padding: 8px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    fontSize: 20px;
+    color: #4b5563;
+    transition: background-color 0.2s ease;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .calendar-picker-nav-btn:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .calendar-picker-month-year {
+    fontSize: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 200px;
+    text-align: center;
+  }
+  
+  /* Days of Week Header */
+  .calendar-picker-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .calendar-picker-weekday {
+    text-align: center;
+    fontSize: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    padding: 8px 0;
+  }
+  
+  /* Calendar Grid */
+  .calendar-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+  
+  .calendar-picker-day {
+    height: 40px;
+    width: 40px;
+    border-radius: 8px;
+    fontSize: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+    color: #374151;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .calendar-picker-day:hover {
+    background-color: #f3f4f6;
+  }
+  
+  /* Day States */
+  .calendar-picker-day.other-month {
+    color: #d1d5db;
+  }
+  
+  .calendar-picker-day.other-month:hover {
+    color: #9ca3af;
+    background-color: #f9fafb;
+  }
+  
+  .calendar-picker-day.today {
+    background-color: #dbeafe;
+    color: #2563eb;
+    font-weight: 600;
+  }
+  
+  .calendar-picker-day.today:hover {
+    background-color: #bfdbfe;
+  }
+  
+  .calendar-picker-day.selected {
+    background-color: #2563eb;
+    color: white;
+  }
+  
+  .calendar-picker-day.selected:hover {
+    background-color: #1d4ed8;
+  }
+  
+  /* Action Buttons */
+  .calendar-picker-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .calendar-picker-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+  }
+  
+  .calendar-picker-btn.clear {
+    background: none;
+    color: #4b5563;
+  }
+  
+  .calendar-picker-btn.clear:hover {
+    color: #1f2937;
+    background-color: #f3f4f6;
+  }
+  
+  .calendar-picker-btn.today {
+    background-color: #2563eb;
+    color: white;
+  }
+  
+  .calendar-picker-btn.today:hover {
+    background-color: #1d4ed8;
+  }
+  
+  /* Mobile Responsiveness */
+  @media (max-width: 480px) {
+    .calendar-picker-container {
+      width: calc(100vw - 32px);
+      padding: 20px;
+    }
+    
+    .calendar-picker-month-year {
+      min-width: 150px;
+      font-size: 16px;
+    }
+    
+    .calendar-picker-day {
+      height: 36px;
+      width: 36px;
+      font-size: 13px;
+    }
+    
+    .calendar-picker-weekday {
+      font-size: 12px;
+      padding: 6px 0;
+    }
+  }
+  
+  /* Dark Mode Support (if needed) */
+  @media (prefers-color-scheme: dark) {
+    .calendar-picker-container {
+      background: #1f2937;
+      color: #f9fafb;
+    }
+    
+    .calendar-picker-heading {
+      color: #f9fafb;
+    }
+    
+    .calendar-picker-month-year {
+      color: #f9fafb;
+    }
+    
+    .calendar-picker-day {
+      color: #d1d5db;
+    }
+    
+    .calendar-picker-day.other-month {
+      color: #6b7280;
+    }
+    
+    .calendar-picker-day:hover {
+      background-color: #374151;
+    }
+    
+    .calendar-picker-nav-btn:hover {
+      background-color: #374151;
+    }
+    
+    .calendar-picker-btn.clear:hover {
+      background-color: #374151;
+    }
+  }

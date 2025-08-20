@@ -4,23 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SourceSelect Dashboard v16</title>
-
-    <!-- ADD THESE REACT SCRIPTS -->
-    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  
-
-    <!-- ADD YOUR CALENDAR PICKER SCRIPT -->
-    <script src="{{ url_for('static', filename='components/global_calendar_picker/GlobalCalendarPicker.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse_analytics/pulse_analytics_clickable.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse_analytics/status_filters.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/shared/dashboard-core.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/projects_tracker/projects_tracker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/clickup_analytics/clickup_analytics.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='components/calendar_analytics/calendar_analytics.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse/pulse.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='components/tools/webflow_importer.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='components/global_calendar_picker/calendar_picker.css') }}">
   
 </head>
 <body>
@@ -37,27 +24,6 @@
                     <div class="live-dot"></div>
                     Live Data
                 </div>
-
-                <div class="header-actions">
-                    <!-- Settings Button -->
-                    <button class="header-action-btn" id="settings-btn" title="Settings">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M12 1v6m0 6v6"></path>
-                            <path d="M1 12h6m6 0h6"></path>
-                            <path d="M4.22 4.22l1.42 1.42m0 12.72l-1.42 1.42M19.78 4.22l-1.42 1.42m0 12.72l1.42 1.42"></path>
-                        </svg>
-                    </button>
-                    
-                    <!-- User Profile Button -->
-                    <button class="user-avatar-btn" id="user-btn" title="User Profile">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span class="notification-badge">3</span>
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -71,22 +37,14 @@
 
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
-            <button class="nav-tab" data-tab="pulse">Pulse</button>
             <button class="nav-tab" data-tab="clickup">ClickUp Analytics</button>
             <button class="nav-tab active" data-tab="projects">Project Tracker</button>
-            <button class="nav-tab" data-tab="calendar">Calendar Dashboard</button>
+            <button class="nav-tab" data-tab="website">Website Tracker</button>
             <button class="nav-tab" data-tab="tools">Tools</button>
         </div>
 
         <!-- Tab Content Container -->
         <div class="tab-content-container">
-
-            <!-- Pulse Widget -->
-            <div class="tab-content" id="pulse-tab">
-                <div id="pulse-widget"></div>
-            </div>
-
-
             <!-- ClickUp Analytics Widget -->
             <div class="tab-content" id="clickup-tab">
                 <div id="clickup-analytics-widget"></div>
@@ -97,9 +55,18 @@
                 <div id="projects-tracker-widget"></div>
             </div>
 
-            <!-- Calendar Analytics Widget -->
-            <div class="tab-content" id="calendar-tab">
-                <div id="calendar-analytics-widget"></div>
+            <!-- Website Tracker Widget -->
+            <div class="tab-content" id="website-tab">
+                <div id="website-tracker-widget">
+                    <div class="projects-section">
+                        <div class="section-header">
+                            <h3 class="section-title">🌐 Website Analytics</h3>
+                        </div>
+                        <div style="color: #64748b; text-align: center; padding: 40px;">
+                            Website tracking data will be displayed here
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Tools Tab - Webflow Importer -->
@@ -171,6 +138,36 @@
                           </div>
                       </div>
                       
+                      <!-- File Upload Card -->
+                      <!-- <div class="converter-card">
+                          <div class="card-header">
+                              <h4 class="card-title">File Uploads</h4>
+                          </div>
+                          <div class="card-body">
+                              <div class="form-group">
+                                  <label class="form-label">Webflow ZIP File</label>
+                                  <div class="file-upload">
+                                      <input type="file" id="webflow-zip" class="file-input" name="webflow_zip" required>
+                                      <label for="webflow-zip" class="file-label">
+                                          <div>Click to upload Webflow export ZIP</div>
+                                          <div class="file-name" id="zip-file-name">No file selected</div>
+                                      </label>
+                                  </div>
+                              </div>
+          
+                              <div class="form-group">
+                                  <label class="form-label">Theme Screenshot</label>
+                                  <div class="file-upload">
+                                      <input type="file" id="screenshot" class="file-input" name="screenshot" accept=".png,.jpg,.jpeg">
+                                      <label for="screenshot" class="file-label">
+                                          <div>Click to upload theme screenshot</div>
+                                          <div class="file-name" id="screenshot-file-name">No file selected</div>
+                                      </label>
+                                  </div>
+                              </div>
+                          </div>
+                      </div> -->
+                      
                       <!-- SEO Optimization Card -->
                       <div class="converter-card">
                           <div class="card-header">
@@ -206,6 +203,19 @@
                                           <option value="Non-profit">
                                           <option value="Entertainment">
                                         </datalist>
+                                      <!-- <select class="form-input" id="business-type" name="business_type">
+                                          <option value="">Select business type...</option>
+                                          <option value="restaurant">Restaurant</option>
+                                          <option value="retail">Retail Store</option>
+                                          <option value="service">Service Business</option>
+                                          <option value="health">Healthcare</option>
+                                          <option value="technology">Technology</option>
+                                          <option value="education">Education</option>
+                                          <option value="real estate">Real Estate</option>
+                                          <option value="law">Legal Services</option>
+                                          <option value="consulting">Consulting</option>
+                                          <option value="other">Other</option>
+                                      </select> -->
                                       <small class="form-help">Helps optimize SEO for your specific industry</small>
                                   </div>
                                   
@@ -344,316 +354,191 @@
     </div>
 
     <!-- Core Dashboard Scripts -->
-    <!-- <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-    <script src="{{ url_for('static', filename='components/global_calendar_picker/GlobalCalendarPicker.js') }}"></script> -->
     <script src="{{ url_for('static', filename='components/shared/dashboard-core.js') }}"></script>
 
     <!-- Component Scripts -->
     <script src="{{ url_for('static', filename='components/clickup_analytics/clickup_analytics.js') }}"></script>
-    <script src="{{ url_for('static', filename='components/pulse/pulse.js') }}"></script>
     <script src="{{ url_for('static', filename='components/projects_tracker/projects_tracker.js') }}"></script>
-    <script src="{{ url_for('static', filename='components/calendar_analytics/calendar_analytics.js') }}"></script>
     <script src="{{ url_for('static', filename='components/tools/webflow_importer.js') }}"></script>
 
     <!-- Main Dashboard Controller -->
     <script>
-        // Updated Dashboard Controller - No Auto Data Loading
-class DashboardController {
-    constructor() {
-        this.activeTab = 'projects';
-        this.components = {};
-        this.init();
-    }
+        class DashboardController {
+            constructor() {
+                this.activeTab = 'projects';
+                this.components = {};
+                this.init();
+            }
 
-    init() {
-        this.setupTabNavigation();
-        this.setupDateFilters();
-        this.loadComponents();
-        this.updateTimestamp();
-    }
-
-    setupTabNavigation() {
-        const tabButtons = document.querySelectorAll('.nav-tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const targetTab = button.dataset.tab;
-                this.switchTab(targetTab, tabButtons, tabContents);
-            });
-        });
-    }
-
-    switchTab(targetTab, tabButtons, tabContents) {
-        // Update active tab button
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`[data-tab="${targetTab}"]`).classList.add('active');
-        
-        // Update active tab content with animation
-        tabContents.forEach(content => {
-            content.classList.remove('active');
-            content.style.opacity = '0';
-        });
-        
-        setTimeout(() => {
-            const targetContent = document.getElementById(`${targetTab}-tab`);
-            targetContent.classList.add('active');
-            targetContent.style.opacity = '1';
+            init() {
+                this.setupTabNavigation();
+                this.setupDateFilters();
+                this.loadComponents();
+                this.updateTimestamp();
+            }
             
-            // REMOVED: Automatic component refresh
-            // this.refreshComponent(targetTab);
-            
-            // NEW: Only refresh component UI without loading data
-            this.refreshComponentUI(targetTab);
-        }, 150);
 
-        this.activeTab = targetTab;
-    }
+            setupTabNavigation() {
+                const tabButtons = document.querySelectorAll('.nav-tab');
+                const tabContents = document.querySelectorAll('.tab-content');
 
-    setupDateFilters() {
-        const filterButtons = document.querySelectorAll('.filter-btn[data-period]');
-        const dateInput = document.getElementById('dateFilter');
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const targetTab = button.dataset.tab;
+                        this.switchTab(targetTab, tabButtons, tabContents);
+                    });
+                });
+            }
 
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const period = button.dataset.period;
+            switchTab(targetTab, tabButtons, tabContents) {
+                // Update active tab button
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-tab="${targetTab}"]`).classList.add('active');
                 
-                // Remove active class from all buttons
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
+                // Update active tab content with animation
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    content.style.opacity = '0';
+                });
                 
-                // Update date input based on period
-                const today = new Date();
-                let targetDate = today;
-                
+                setTimeout(() => {
+                    const targetContent = document.getElementById(`${targetTab}-tab`);
+                    targetContent.classList.add('active');
+                    targetContent.style.opacity = '1';
+                    
+                    // Trigger component refresh if needed
+                    this.refreshComponent(targetTab);
+                }, 150);
+
+                this.activeTab = targetTab;
+            }
+
+            setupDateFilters() {
+                const filterButtons = document.querySelectorAll('.filter-btn[data-period]');
+                const dateInput = document.getElementById('dateFilter');
+
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        const period = button.dataset.period;
+                        this.updateDateFilter(period);
+                    });
+                });
+
+                dateInput.addEventListener('change', (e) => {
+                    this.updateCustomDate(e.target.value);
+                });
+            }
+
+            updateDateFilter(period) {
+                const now = new Date();
+                let targetDate;
+
                 switch(period) {
                     case 'yesterday':
-                        targetDate.setDate(today.getDate() - 1);
-                        break;
-                    case 'week':
-                        targetDate.setDate(today.getDate() - 7);
+                        targetDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
                         break;
                     case 'today':
-                    default:
-                        // Keep today
+                        targetDate = now;
+                        break;
+                    case 'week':
+                        targetDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                         break;
                 }
+
+                if (targetDate) {
+                    document.getElementById('dateFilter').value = targetDate.toISOString().split('T')[0];
+                    this.refreshActiveComponent();
+                }
+            }
+
+            updateCustomDate(dateValue) {
+                // Remove active class from period buttons
+                document.querySelectorAll('.filter-btn[data-period]').forEach(btn => 
+                    btn.classList.remove('active')
+                );
                 
-                if (dateInput) {
-                    dateInput.value = targetDate.toISOString().split('T')[0];
+                this.refreshActiveComponent();
+            }
+
+            loadComponents() {
+                // Initialize components
+                if (typeof ClickUpAnalytics !== 'undefined') {
+                    this.components.clickup = new ClickUpAnalytics('clickup-analytics-widget');
                 }
                 
-                // Notify active component of date change without auto-loading
-                this.notifyDateChange(targetDate);
-            });
+                if (typeof ProjectsTracker !== 'undefined') {
+                    this.components.projects = new ProjectsTracker('projects-tracker-widget');
+                }
+                
+                if (typeof WebflowImporter !== 'undefined') {
+                    this.components.tools = new WebflowImporter('webflow-importer-widget');
+                }
+            }
+
+            refreshComponent(componentName) {
+                const component = this.components[componentName];
+                if (component && typeof component.refresh === 'function') {
+                    component.refresh();
+                }
+            }
+
+            refreshActiveComponent() {
+                this.refreshComponent(this.activeTab);
+            }
+
+            updateTimestamp() {
+                const now = new Date();
+                const timestamp = now.toLocaleString('en-US', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+                
+                document.getElementById('lastUpdated').textContent = timestamp;
+                
+                // Update every 30 seconds
+                setTimeout(() => this.updateTimestamp(), 30000);
+            }
+        }
+
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dashboard = new DashboardController();
         });
 
-        if (dateInput) {
-            dateInput.addEventListener('change', (e) => {
-                // Update filter buttons
-                const selectedDate = new Date(e.target.value);
-                const today = new Date().toISOString().split('T')[0];
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toISOString().split('T')[0];
-                
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                
-                if (e.target.value === today) {
-                    document.querySelector('[data-period="today"]')?.classList.add('active');
-                } else if (e.target.value === yesterdayStr) {
-                    document.querySelector('[data-period="yesterday"]')?.classList.add('active');
-                }
-                
-                this.notifyDateChange(selectedDate);
-            });
-        }
-    }
+        // Enhanced toggle handlers
+        document.addEventListener('DOMContentLoaded', function() {
+          // CMS Toggle
+          const cmsToggle = document.getElementById('enable-cms');
+          const cmsFields = document.getElementById('cms-fields');
 
-    loadComponents() {
-        // Initialize all components but don't load their data
-        if (typeof PulseAnalytics !== 'undefined') {
-            this.components.pulse = new PulseAnalytics('pulse-widget');
-        }
-        
-        if (typeof ClickUpAnalytics !== 'undefined') {
-            this.components.clickup = new ClickUpAnalytics('clickup-analytics-widget');
-        }
-        
-        if (typeof ProjectsTracker !== 'undefined') {
-            this.components.projects = new ProjectsTracker('projects-tracker-widget');
-        }
-        
-        if (typeof CalendarAnalytics !== 'undefined') {
-            this.components.calendar = new CalendarAnalytics('calendar-analytics-widget');
-            window.calendarAnalytics = this.components.calendar;
-        }
-        
-        if (typeof WebflowImporter !== 'undefined') {
-            this.components.tools = new WebflowImporter('tools-widget');
-        }
-
-        // Load initial data only for the active tab's component if it has auto-load enabled
-        this.loadInitialActiveComponent();
-    }
-
-    // NEW: Only refresh UI without loading data
-    refreshComponentUI(componentName) {
-        const component = this.components[componentName];
-        if (component) {
-            // Check if component has a refreshUI method (for non-data updates)
-            if (typeof component.refreshUI === 'function') {
-                component.refreshUI();
-            }
-            // For pulse component, just ensure it shows the initial state
-            else if (componentName === 'pulse' && typeof component.renderInitialState === 'function') {
-                component.renderInitialState();
-            }
-            // For other components, only refresh if they already have data
-            else if (typeof component.refresh === 'function' && component.dataLoaded) {
-                component.refresh();
-            }
-        }
-    }
-
-    // UPDATED: Only auto-load for components that should auto-load (not pulse)
-    loadInitialActiveComponent() {
-        const activeComponent = this.components[this.activeTab];
-        if (activeComponent) {
-            // Only auto-load for specific components (not pulse)
-            if (this.activeTab !== 'pulse' && typeof activeComponent.loadData === 'function') {
-                activeComponent.loadData();
-            }
-            // For pulse, just ensure initial state is rendered
-            else if (this.activeTab === 'pulse' && typeof activeComponent.renderInitialState === 'function') {
-                activeComponent.renderInitialState();
-            }
-        }
-    }
-
-    // UPDATED: Manual refresh method (can be called by user action)
-    refreshComponent(componentName) {
-        const component = this.components[componentName];
-        if (component && typeof component.refresh === 'function') {
-            component.refresh();
-        }
-    }
-
-    refreshActiveComponent() {
-        this.refreshComponent(this.activeTab);
-    }
-
-    // NEW: Notify components of date changes without forcing data load
-    notifyDateChange(date) {
-        const activeComponent = this.components[this.activeTab];
-        if (activeComponent) {
-            // Update component's selected date if it has that property
-            if (activeComponent.selectedDate !== undefined) {
-                activeComponent.selectedDate = date.toISOString().split('T')[0];
-            }
+          if (cmsToggle && cmsFields) {
+            cmsFields.style.display = cmsToggle.checked ? 'block' : 'none';
             
-            // Update date picker if component has one
-            if (typeof activeComponent.updateDateDisplay === 'function') {
-                activeComponent.updateDateDisplay();
-            }
-        }
-    }
+            cmsToggle.addEventListener('change', function() {
+              cmsFields.style.display = this.checked ? 'block' : 'none';
+            });
+          }
+          
+          // SEO Toggle
+          const seoToggle = document.getElementById('enable-seo');
+          const seoFields = document.getElementById('seo-fields');
 
-    updateTimestamp() {
-        const now = new Date();
-        const timestamp = now.toLocaleString('en-US', {
-            month: 'numeric',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
+          if (seoToggle && seoFields) {
+            seoFields.style.display = seoToggle.checked ? 'block' : 'none';
+            
+            seoToggle.addEventListener('change', function() {
+              seoFields.style.display = this.checked ? 'block' : 'none';
+            });
+          }
         });
-        
-        const lastUpdatedElement = document.getElementById('lastUpdated');
-        if (lastUpdatedElement) {
-            lastUpdatedElement.textContent = timestamp;
-        }
-        
-        // Update every 30 seconds
-        setTimeout(() => this.updateTimestamp(), 30000);
-    }
-
-    // NEW: Manual data loading methods for user-triggered actions
-    loadComponentData(componentName) {
-        const component = this.components[componentName];
-        if (component && typeof component.loadData === 'function') {
-            component.loadData();
-        }
-    }
-
-    loadActiveComponentData() {
-        this.loadComponentData(this.activeTab);
-    }
-
-    // NEW: Global refresh button functionality
-    refreshAll() {
-        Object.keys(this.components).forEach(componentName => {
-            const component = this.components[componentName];
-            if (component && typeof component.refresh === 'function' && component.dataLoaded) {
-                component.refresh();
-            }
-        });
-    }
-}
-
-// Initialize dashboard when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.dashboard = new DashboardController();
-    
-    // Optional: Add global keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + R to refresh active component
-        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-            e.preventDefault();
-            if (window.dashboard) {
-                window.dashboard.refreshActiveComponent();
-            }
-        }
-        
-        // Ctrl/Cmd + Shift + R to refresh all components
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
-            e.preventDefault();
-            if (window.dashboard) {
-                window.dashboard.refreshAll();
-            }
-        }
-    });
-});
-
-// Enhanced toggle handlers (keep your existing code)
-document.addEventListener('DOMContentLoaded', function() {
-    // CMS Toggle
-    const cmsToggle = document.getElementById('enable-cms');
-    const cmsFields = document.getElementById('cms-fields');
-
-    if (cmsToggle && cmsFields) {
-        cmsFields.style.display = cmsToggle.checked ? 'block' : 'none';
-        
-        cmsToggle.addEventListener('change', function() {
-            cmsFields.style.display = this.checked ? 'block' : 'none';
-        });
-    }
-    
-    // SEO Toggle
-    const seoToggle = document.getElementById('enable-seo');
-    const seoFields = document.getElementById('seo-fields');
-
-    if (seoToggle && seoFields) {
-        seoFields.style.display = seoToggle.checked ? 'block' : 'none';
-        
-        seoToggle.addEventListener('change', function() {
-            seoFields.style.display = this.checked ? 'block' : 'none';
-        });
-    }
-});
     </script>
     
     <style>

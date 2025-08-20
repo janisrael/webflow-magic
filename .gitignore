@@ -4,3 +4,10 @@ app/webflow-temp
 app/WebflowStarter_old
 app/WebflowStarter_working
 app/webflow_export
+*.zip
+/final-theme.env
+.env
+.env
+.env
+.env
+example.env

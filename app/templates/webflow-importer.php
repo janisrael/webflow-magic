@@ -86,69 +86,69 @@ class Webflow_Importer_Complete
     public function render_admin_page()
     {
         ?>
-        <div class="wrap">
-            <h1>Webflow CMS Importer</h1>
-            <div id="webflow-importer">
-                <div class="progress-container">
-                    <div class="progress-bar" style="width:0%"></div>
+                <div class="wrap">
+                    <h1>Webflow CMS Importer</h1>
+                    <div id="webflow-importer">
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width:0%"></div>
+                        </div>
+                        <button id="start-import" class="button button-primary">Start Import</button>
+                        <div id="import-results"></div>
+                    </div>
                 </div>
-                <button id="start-import" class="button button-primary">Start Import</button>
-                <div id="import-results"></div>
-            </div>
-        </div>
 
-        <style>
-            .progress-container {
-                background: #f3f3f3;
-                height: 20px;
-                margin: 20px 0;
-                border-radius: 4px;
-            }
-
-            .progress-bar {
-                background: #2271b1;
-                height: 100%;
-                transition: width 0.3s;
-            }
-        </style>
-
-        <script>
-            jQuery(document).ready(function ($) {
-                $('#start-import').click(function () {
-                    var $btn = $(this).prop('disabled', true);
-                    var $progress = $('.progress-bar');
-                    var $results = $('#import-results').empty();
-
-                    function updateProgress(percent, message) {
-                        $progress.css('width', percent + '%');
-                        $results.append('<p>' + message + '</p>');
+                <style>
+                    .progress-container {
+                        background: #f3f3f3;
+                        height: 20px;
+                        margin: 20px 0;
+                        border-radius: 4px;
                     }
 
-                    $.ajax({
-                        url: ajaxurl,
-                        method: 'POST',
-                        data: {
-                            action: 'webflow_import',
-                            _wpnonce: '<?php echo wp_create_nonce('webflow_import'); ?>'
-                        },
-                        success: function (response) {
-                            if (response.success) {
-                                updateProgress(100, 'Import complete! Refreshing...');
-                                setTimeout(function () {
-                                    location.reload();
-                                }, 1500);
-                            } else {
-                                updateProgress(0, 'Error: ' + response.data);
+                    .progress-bar {
+                        background: #2271b1;
+                        height: 100%;
+                        transition: width 0.3s;
+                    }
+                </style>
+
+                <script>
+                    jQuery(document).ready(function ($) {
+                        $('#start-import').click(function () {
+                            var $btn = $(this).prop('disabled', true);
+                            var $progress = $('.progress-bar');
+                            var $results = $('#import-results').empty();
+
+                            function updateProgress(percent, message) {
+                                $progress.css('width', percent + '%');
+                                $results.append('<p>' + message + '</p>');
                             }
-                        },
-                        complete: function () {
-                            $btn.prop('disabled', false);
-                        }
+
+                            $.ajax({
+                                url: ajaxurl,
+                                method: 'POST',
+                                data: {
+                                    action: 'webflow_import',
+                                    _wpnonce: '<?php echo wp_create_nonce('webflow_import'); ?>'
+                                },
+                                success: function (response) {
+                                    if (response.success) {
+                                        updateProgress(100, 'Import complete! Refreshing...');
+                                        setTimeout(function () {
+                                            location.reload();
+                                        }, 1500);
+                                    } else {
+                                        updateProgress(0, 'Error: ' + response.data);
+                                    }
+                                },
+                                complete: function () {
+                                    $btn.prop('disabled', false);
+                                }
+                            });
+                        });
                     });
-                });
-            });
-        </script>
-        <?php
+                </script>
+                <?php
     }
 
     // 4. AJAX IMPORT HANDLER

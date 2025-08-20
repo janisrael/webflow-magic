@@ -34,82 +34,80 @@ def index():
 
 @app.route('/api/pulse-data')
 def get_pulse_data():
+    """
+    Enhanced pulse data endpoint with status filtering
+    """
     try:
+        # Get parameters
         target_date = request.args.get('date')
         debug_mode = request.args.get('debug', 'false').lower() == 'true'
         
-        # Get status filters
+        # NEW: Get status filters from request
         status_filters = request.args.getlist('status_filter')
+        
+        # If no status filters provided, use default
         if not status_filters:
             status_filters = ['to do', 'planning', 'in progress', 'bugs']
         
-        # Get member filters
-        member_filters = request.args.getlist('member_filter')
-        if not member_filters:
-            member_filters = ['Arif', 'Jan', 'wiktor', 'Kendra', 'Calum', 'Tricia', 'Rick']
-        
-        # NEW: Get space filters
-        space_filters = request.args.getlist('space_filter')
-        if not space_filters:
-            # Default: main workspace only
-            filters =  ["90132462540", "90134767504", "90138214659", "90138873649"]
-            space_filters = filters
-            
         if debug_mode:
-            print(f"🔍 DEBUG: Status filters: {status_filters}")
-            print(f"👥 DEBUG: Member filters: {member_filters}")
-            print(f"🏢 DEBUG: Space filters: {space_filters}")
+            print(f"🔍 DEBUG: Received status filters: {status_filters}")
         
+        # Parse target date
+        if target_date:
+            try:
+                analysis_date = datetime.strptime(target_date, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+        else:
+            analysis_date = datetime.now().date()
+        
+        # Initialize ClickUp integration
         clickup_integration = ClickUpPulseIntegration(
             api_token='pk_126127973_ULPZ9TEC7TGPGAP3WVCA2KWOQQGV3Y4K',
-            space_id=None  # We'll pass space_filters instead
+            space_id='90132462540'
         )
         
-        # Pass all filters including spaces
+        # Generate pulse analytics with status filters
         pulse_data = clickup_integration.generate_pulse_analytics(
-            target_date=target_date,
+            target_date=analysis_date,
             debug=debug_mode,
-            status_filters=status_filters,
-            member_filters=member_filters,
-            space_filters=space_filters  # NEW
+            status_filters=status_filters  # NEW: Pass status filters
         )
         
         if pulse_data is None:
-            return jsonify({"error": "No pulse data available"}), 404
+            return jsonify({
+                "error": "No pulse data available",
+                "debug_info": {
+                    "analysis_date": str(analysis_date),
+                    "is_weekend": analysis_date.weekday() >= 5,
+                    "status_filters": status_filters,
+                    "message": "No team members found or no tasks matching criteria"
+                } if debug_mode else None
+            }), 404
         
         # Add filter info to response
         pulse_data["filter_info"] = {
             "status_filters_applied": status_filters,
-            "member_filters_applied": member_filters,
-            "space_filters_applied": space_filters,  # NEW
             "total_statuses_available": ['to do', 'planning', 'in progress', 'bugs', 'for qa', 'for viewing', 'grammar'],
-            "total_members_available": ['Arif', 'Jan', 'wiktor', 'Kendra', 'Calum', 'Tricia', 'Rick'],
-            "total_spaces_available": space_filters,  # You can get this from ClickUp API
-            "filter_count": len(status_filters),
-            "member_filter_count": len(member_filters),
-            "space_filter_count": len(space_filters)  # NEW
+            "filter_count": len(status_filters)
         }
         
         return jsonify(pulse_data)
         
     except Exception as e:
-        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+        print(f"❌ Error in pulse data endpoint: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "error": f"Internal server error: {str(e)}",
+            "debug_info": {
+                "traceback": traceback.format_exc() if debug_mode else None
+            }
+        }), 500
 
-@app.route('/api/available-spaces')
-def get_available_spaces():
-    try:
-        clickup_integration = ClickUpPulseIntegration(
-            api_token='pk_126127973_ULPZ9TEC7TGPGAP3WVCA2KWOQQGV3Y4K',
-            space_id=None
-        )
-        
-        spaces = clickup_integration.get_all_available_spaces()
-        return jsonify({"spaces": spaces})
-        
-    except Exception as e:
-        return jsonify({"error": f"Error fetching spaces: {str(e)}"}), 500
 
-        
+
 @app.route('/api/calendar-data')
 def get_calendar_data():
     """

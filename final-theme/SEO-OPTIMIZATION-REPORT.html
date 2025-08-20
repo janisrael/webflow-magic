@@ -1,0 +1,753 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Optimization Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 { margin: 0; font-size: 2.5rem; }
+        .header p { margin: 10px 0 0; opacity: 0.9; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .stat-label { color: #64748b; font-weight: 500; }
+        .excellent { color: #22c55e; }
+        .good { color: #3b82f6; }
+        .fair { color: #f59e0b; }
+        .poor { color: #ef4444; }
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .page-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+        .page-card:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .score-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .recommendations {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .recommendations ul { margin: 0; padding-left: 20px; }
+        .recommendations li { margin-bottom: 5px; }
+        .keywords-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .keyword-item {
+            background: #f1f5f9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .keyword-badge {
+            background: #6366f1;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 SEO Optimization Report</h1>
+            <p>AI-Powered SEO Analysis with Trending Keywords Integration</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number excellent">85</div>
+                <div class="stat-label">Average SEO Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">24</div>
+                <div class="stat-label">Pages Optimized</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number excellent">19</div>
+                <div class="stat-label">Excellent Pages (80+)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number good">2</div>
+                <div class="stat-label">Good Pages (60-79)</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Score Distribution</h2>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                <div style="text-align: center;">
+                    <div class="excellent" style="font-size: 2rem; font-weight: bold;">19</div>
+                    <div>Excellent (80-100)</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill excellent" style="width: 79.16666666666666%; background: #22c55e;"></div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="good" style="font-size: 2rem; font-weight: bold;">2</div>
+                    <div>Good (60-79)</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill good" style="width: 8.333333333333332%; background: #3b82f6;"></div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="fair" style="font-size: 2rem; font-weight: bold;">3</div>
+                    <div>Fair (40-59)</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill fair" style="width: 12.5%; background: #f59e0b;"></div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="poor" style="font-size: 2rem; font-weight: bold;">0</div>
+                    <div>Poor (0-39)</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill poor" style="width: 0.0%; background: #ef4444;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Top Trending Keywords Integrated</h2>
+            <div class="keywords-grid">
+
+                <div class="keyword-item">
+                    <span>E-commerce alberta, canada</span>
+                    <span class="keyword-badge">24</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>links 2025</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>best links</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>links near me</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>links services</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>links in alberta, canada</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>alberta, canada links</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>links sustainable</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>links eco-friendly</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+                <div class="keyword-item">
+                    <span>links digital transformation</span>
+                    <span class="keyword-badge">9</span>
+                </div>
+
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📄 Individual Page Reports</h2>
+
+            <div class="page-card">
+                <div class="page-title">Terms & Conditions</div>
+                <span class="score-badge" style="background-color: #22c55e;">97/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> terms, terms alberta, canada, terms 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> terms 2025, best terms, terms near me, terms services, terms in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #22c55e;">97/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Career</div>
+                <span class="score-badge" style="background-color: #22c55e;">97/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> careers, careers alberta, canada, careers 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> careers 2025, best careers, careers near me, careers services, careers in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Privacy Policy</div>
+                <span class="score-badge" style="background-color: #22c55e;">97/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> privacy, privacy alberta, canada, privacy 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> privacy 2025, best privacy, privacy near me, privacy services, privacy in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">unt</div>
+                <span class="score-badge" style="background-color: #22c55e;">97/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Contact Us</div>
+                <span class="score-badge" style="background-color: #22c55e;">93/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> contact, contact alberta, canada, contact 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> contact 2025, best contact, contact near me, contact services, contact in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Become a Dealer</div>
+                <span class="score-badge" style="background-color: #22c55e;">93/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> dealer, dealer alberta, canada, dealer 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> dealer 2025, best dealer, dealer near me, dealer services, dealer in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Find a Dealer</div>
+                <span class="score-badge" style="background-color: #22c55e;">93/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> dealer, dealer alberta, canada, dealer 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> dealer 2025, best dealer, dealer near me, dealer services, dealer in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">temp blind</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">News</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">catalog-list</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> links, links alberta, canada, links 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> links 2025, best links, links near me, links services, links in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Not Found</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> not, not alberta, canada, not 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> not 2025, best not, not near me, not services, not in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Gallery</div>
+                <span class="score-badge" style="background-color: #22c55e;">90/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> bbv, bbv alberta, canada, bbv 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> bbv 2025, best bbv, bbv near me, bbv services, bbv in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">misc</div>
+                <span class="score-badge" style="background-color: #22c55e;">85/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> heading, heading alberta, canada, heading 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> heading 2025, best heading, heading near me, heading services, heading in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Improve heading structure: use one H1 and multiple H2 tags</li><li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Search Results</div>
+                <span class="score-badge" style="background-color: #22c55e;">80/100 - Excellent</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> search, search alberta, canada, search 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> search 2025, best search, search near me, search services, search in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li><li>Better integrate focus keywords naturally throughout content</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Color</div>
+                <span class="score-badge" style="background-color: #3b82f6;">65/100 - Good</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> color, color alberta, canada, color 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> color 2025, best color, color near me, color services, color in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Improve heading structure: use one H1 and multiple H2 tags</li><li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #3b82f6;">62/100 - Good</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> copy, copy alberta, canada, copy 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> copy 2025, best copy, copy near me, copy services, copy in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Improve heading structure: use one H1 and multiple H2 tags</li><li>Increase content length to 300+ words for better search rankings</li><li>Add mobile viewport meta tag for mobile optimization</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #f59e0b;">57/100 - Fair</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> copy, copy alberta, canada, copy 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> copy 2025, best copy, copy near me, copy services, copy in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Consider comprehensive SEO audit - multiple areas need improvement</li><li>Improve heading structure: use one H1 and multiple H2 tags</li><li>Add descriptive alt text to all images for better accessibility and SEO</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #f59e0b;">57/100 - Fair</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> copy, copy alberta, canada, copy 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> copy 2025, best copy, copy near me, copy services, copy in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Consider comprehensive SEO audit - multiple areas need improvement</li><li>Improve heading structure: use one H1 and multiple H2 tags</li><li>Add descriptive alt text to all images for better accessibility and SEO</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-card">
+                <div class="page-title">Copy of Blinds By Vertican</div>
+                <span class="score-badge" style="background-color: #f59e0b;">57/100 - Fair</span>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Focus Keywords:</strong> copy, copy alberta, canada, copy 2025
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>Trending Keywords Used:</strong> copy 2025, best copy, copy near me, copy services, copy in alberta, canada
+                </div>
+                
+                <div class="recommendations">
+                    <strong>SEO Recommendations:</strong>
+                    <ul>
+<li>Consider comprehensive SEO audit - multiple areas need improvement</li><li>Improve heading structure: use one H1 and multiple H2 tags</li><li>Add descriptive alt text to all images for better accessibility and SEO</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="section">
+            <h2>🎉 Optimization Summary</h2>
+            <p><strong>✅ SEO Elements Added:</strong></p>
+            <ul>
+                <li>AI-generated meta titles and descriptions optimized for trending keywords</li>
+                <li>Schema.org JSON-LD structured data markup</li>
+                <li>Open Graph and Twitter Card meta tags for social sharing</li>
+                <li>Keyword-optimized alt text for images</li>
+                <li>Mobile-friendly viewport configuration</li>
+                <li>Search engine crawler optimization (robots, googlebot, bingbot)</li>
+                <li>Performance and accessibility enhancements</li>
+            </ul>
+            
+            <p><strong>🚀 Next Steps:</strong></p>
+            <ul>
+                <li>Monitor search rankings for targeted keywords</li>
+                <li>Set up Google Search Console and Analytics</li>
+                <li>Create quality backlinks to improve domain authority</li>
+                <li>Regularly update content with fresh trending keywords</li>
+                <li>Optimize page loading speed and Core Web Vitals</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
