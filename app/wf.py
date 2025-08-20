@@ -59,7 +59,10 @@ def get_pulse_data():
             print(f"🔍 DEBUG: Status filters: {status_filters}")
             print(f"👥 DEBUG: Member filters: {member_filters}")
             print(f"🏢 DEBUG: Space filters: {space_filters}")
-        
+
+        force_refresh = request.args.get('force_refresh', 'false').lower() == 'true'
+
+
         clickup_integration = ClickUpPulseIntegration(
             api_token='pk_126127973_ULPZ9TEC7TGPGAP3WVCA2KWOQQGV3Y4K',
             space_id=None  # We'll pass space_filters instead
@@ -71,7 +74,8 @@ def get_pulse_data():
             debug=debug_mode,
             status_filters=status_filters,
             member_filters=member_filters,
-            space_filters=space_filters  # NEW
+            space_filters=space_filters,
+            force_refresh=force_refresh  # ADD THIS LINE
         )
         
         if pulse_data is None:

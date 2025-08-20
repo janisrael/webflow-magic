@@ -50,34 +50,87 @@ class PulseAnalytics {
   }
 
   init() {
-    this.renderInitialState();
-    // DO NOT auto-load data on init
+    // Auto-load data directly - let the backend handle cache logic
+    // this.loadData();
+    this.checkForData();
+  }
+
+  async checkForData() {
+    try {
+      console.log("🔍 Checking for cached pulse data...");
+
+      // Silently check for cached data without loading spinner
+      const params = new URLSearchParams();
+      if (this.selectedDate !== new Date().toISOString().split("T")[0]) {
+        params.append("date", this.selectedDate);
+      }
+
+      const url = `/api/pulse-data${params.toString() ? "?" + params.toString() : ""}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      console.log("🔍 API Response:", {
+        hasData: !!data,
+        hasMemberWorkloads: !!(data && data.member_workloads),
+        memberWorkloadsKeys: data?.member_workloads ? Object.keys(data.member_workloads) : [],
+        memberWorkloadsCount: data?.member_workloads
+          ? Object.keys(data.member_workloads).length
+          : 0,
+        hasError: !!(data && data.error),
+        error: data?.error,
+        dataKeys: data ? Object.keys(data) : [],
+      });
+
+      // Check if we have ACTUAL member workload data (not just empty object)
+      const hasMemberData =
+        data &&
+        data.member_workloads &&
+        typeof data.member_workloads === "object" &&
+        Object.keys(data.member_workloads).length > 0;
+
+      if (hasMemberData) {
+        console.log("✅ Found valid cached pulse data - showing data directly");
+        this.data = data;
+        this.dataLoaded = true;
+        this.render(); // Show pulse-main-content directly - NO generate-data-section
+      } else {
+        console.log("❌ No valid cached data - showing generate-data-section");
+        this.renderInitialState(); // Shows generate-data-section ONLY
+      }
+    } catch (error) {
+      console.error("❌ Error checking for cached data:", error);
+      this.renderInitialState(); // Shows generate-data-section on error
+    }
   }
 
   renderInitialState() {
-    const activeStatusCount = Object.values(this.statusFilters).filter(Boolean).length;
-    const totalStatusCount = Object.keys(this.statusFilters).length;
-    const activeMemberCount = Object.values(this.memberFilters).filter(Boolean).length;
-    const totalMemberCount = Object.keys(this.memberFilters).length;
-    const activeSpaceCount = Object.values(this.spaceFilters).filter(
-      (config) => config.checked
-    ).length;
-    const totalSpaceCount = Object.keys(this.spaceFilters).length;
+    if (this.data) {
+      this.checkForData();
+    } else {
+      const activeStatusCount = Object.values(this.statusFilters).filter(Boolean).length;
+      const totalStatusCount = Object.keys(this.statusFilters).length;
+      const activeMemberCount = Object.values(this.memberFilters).filter(Boolean).length;
+      const totalMemberCount = Object.keys(this.memberFilters).length;
+      const activeSpaceCount = Object.values(this.spaceFilters).filter(
+        (config) => config.checked
+      ).length;
+      const totalSpaceCount = Object.keys(this.spaceFilters).length;
 
-    // Get active filter names for preview
-    const activeStatuses = Object.entries(this.statusFilters)
-      .filter(([status, isActive]) => isActive)
-      .map(([status]) => status);
+      // Get active filter names for preview
+      const activeStatuses = Object.entries(this.statusFilters)
+        .filter(([status, isActive]) => isActive)
+        .map(([status]) => status);
 
-    const activeMembers = Object.entries(this.memberFilters)
-      .filter(([member, isActive]) => isActive)
-      .map(([member]) => member);
+      const activeMembers = Object.entries(this.memberFilters)
+        .filter(([member, isActive]) => isActive)
+        .map(([member]) => member);
 
-    const activeSpaces = Object.entries(this.spaceFilters)
-      .filter(([spaceId, config]) => config.checked)
-      .map(([spaceId, config]) => config.name);
+      const activeSpaces = Object.entries(this.spaceFilters)
+        .filter(([spaceId, config]) => config.checked)
+        .map(([spaceId, config]) => config.name);
 
-    this.container.innerHTML = `
+      this.container.innerHTML = `
       <div class="pulse-container">
         <div class="pulse-header">
           <h2>
@@ -105,18 +158,18 @@ class PulseAnalytics {
                     <div class="filter-summary">
                       <div class="filter-summary-line">
                         <strong>${activeStatusCount}/${totalStatusCount}</strong> statuses: ${activeStatuses
-      .slice(0, 3)
-      .join(", ")}${activeStatuses.length > 3 ? "..." : ""}
+        .slice(0, 3)
+        .join(", ")}${activeStatuses.length > 3 ? "..." : ""}
                       </div>
                       <div class="filter-summary-line">
                         <strong>${activeMemberCount}/${totalMemberCount}</strong> members: ${activeMembers
-      .slice(0, 4)
-      .join(", ")}${activeMembers.length > 4 ? "..." : ""}
+        .slice(0, 4)
+        .join(", ")}${activeMembers.length > 4 ? "..." : ""}
                       </div>
                       <div class="filter-summary-line">
                         <strong>${activeSpaceCount}/${totalSpaceCount}</strong> spaces: ${activeSpaces
-      .slice(0, 2)
-      .join(", ")}${activeSpaces.length > 2 ? "..." : ""}
+        .slice(0, 2)
+        .join(", ")}${activeSpaces.length > 2 ? "..." : ""}
                       </div>
                     </div>
                   </button>
@@ -166,6 +219,12 @@ class PulseAnalytics {
               <span class="generate-icon">⚡</span>
               Generate Pulse Data
             </button>
+            <button class="generate-pulse-btn refresh-pulse-btn" id="refresh-pulse-btn" style="background: #2563eb; margin-left: 10px; display: ${
+              this.dataLoaded ? "inline-flex" : "none"
+            };">
+              <span class="btn-icon">🔄</span>
+              Force Refresh
+            </button>
             <div class="generate-data-info">
               <small>This will fetch and analyze tasks from ClickUp for the selected date range and team members.</small>
             </div>
@@ -174,7 +233,27 @@ class PulseAnalytics {
       </div>
     `;
 
-    this.setupInitialEvents();
+      setTimeout(() => {
+        const generateBtn = document.getElementById("generate-data-btn");
+        const refreshBtn = document.getElementById("refresh-pulse-btn");
+
+        if (generateBtn) {
+          generateBtn.addEventListener("click", () => {
+            console.log("🔄 Generate button clicked");
+            // this.loadData();
+          });
+        }
+
+        if (refreshBtn) {
+          refreshBtn.addEventListener("click", () => {
+            console.log("🔄 Force refresh button clicked");
+            // this.loadDataWithRefresh();
+          });
+        }
+      }, 100);
+
+      this.setupInitialEvents();
+    }
   }
 
   setupInitialEvents() {
@@ -361,6 +440,73 @@ class PulseAnalytics {
     }
   }
 
+  async loadDataWithRefresh() {
+    try {
+      this.showLoading();
+
+      const params = new URLSearchParams();
+
+      if (this.selectedDate !== new Date().toISOString().split("T")[0]) {
+        params.append("date", this.selectedDate);
+      }
+
+      if (this.debugMode) {
+        params.append("debug", "true");
+      }
+
+      // IMPORTANT: Add force_refresh parameter
+      params.append("force_refresh", "true");
+
+      // Add all existing filters
+      const activeStatuses = Object.entries(this.statusFilters)
+        .filter(([status, isActive]) => isActive)
+        .map(([status]) => status);
+
+      activeStatuses.forEach((status) => {
+        params.append("status_filter", status);
+      });
+
+      const activeMembers = Object.entries(this.memberFilters)
+        .filter(([member, isActive]) => isActive)
+        .map(([member]) => member);
+
+      activeMembers.forEach((member) => {
+        params.append("member_filter", member);
+      });
+
+      const activeSpaces = Object.entries(this.spaceFilters)
+        .filter(([spaceId, config]) => config.checked)
+        .map(([spaceId]) => spaceId);
+
+      activeSpaces.forEach((spaceId) => {
+        params.append("space_filter", spaceId);
+      });
+
+      const url = `/api/pulse-data?${params.toString()}`;
+      console.log("🔄 Force refresh - fetching fresh data from:", url);
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.error && !data.demo_data) {
+        throw new Error(data.error);
+      }
+
+      this.data = data;
+      this.dataLoaded = true;
+      this.render();
+
+      console.log("✅ Fresh data generated and new JSON file created");
+
+      if (this.debugMode && data.debug_info) {
+        console.log("🐛 DEBUG INFO:", data.debug_info);
+      }
+    } catch (error) {
+      console.error("Error loading fresh pulse data:", error);
+      this.showError(error.message);
+    }
+  }
+
   showLoading() {
     this.container.innerHTML = `
       <div class="pulse-loading">
@@ -476,7 +622,8 @@ class PulseAnalytics {
 
   // FIXED: Filter modal management with animations
   showFilterModal() {
-    this.hideFilterModal();
+    f;
+    // this.hideFilterModal();
 
     const modalHTML = this.renderFilterModal();
     document.body.insertAdjacentHTML("beforeend", modalHTML);
@@ -824,6 +971,23 @@ class PulseAnalytics {
       const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
       const isHistorical = this.data.cache_info?.is_historical;
 
+      // try {
+      //   const workloads = this.data.member_workloads || {};
+      //   console.log("🔍 Rendering member workloads:", Object.keys(workloads));
+
+      // if (Object.keys(workloads).length === 0) {
+      const activeStatuses = Object.entries(this.statusFilters)
+        .filter(([status, isActive]) => isActive)
+        .map(([status, isActive]) => status);
+
+      const activeMembers = Object.entries(this.memberFilters)
+        .filter(([member, isActive]) => isActive)
+        .map(([member, isActive]) => member);
+
+      const activeSpaces = Object.entries(this.spaceFilters)
+        .filter(([spaceId, config]) => config.checked)
+        .map(([spaceId, config]) => config.name);
+
       // Count active filters for summary
       const activeStatusCount = Object.values(this.statusFilters).filter(Boolean).length;
       const totalStatusCount = Object.keys(this.statusFilters).length;
@@ -867,31 +1031,37 @@ class PulseAnalytics {
                     <div class="control-row">
                         <!-- Large Filter Controls -->
                         <div class="filter-controls">
-                          <label for="filter-control">🎛️ Analysis Filters</label>
-                          
+              
+              
                           <div class="filter-picker-group">
                             <div class="filter-picker-container">
                               <button id="open-filters-btn" class="filter-picker-btn">
                                 <div class="filter-main-info">
                                   <span class="filter-icon">🎛️</span>
-                                  <span class="filter-text">Configure Filters</span>
+                                  <span class="filter-text">Filters</span>
                                 </div>
                                 <div class="filter-summary">
                                   <div class="filter-summary-line">
-                                    <strong>${activeStatusCount}/${totalStatusCount}</strong> statuses
+                                    <strong>${activeStatusCount}/${totalStatusCount}</strong> statuses: ${activeStatuses
+        .slice(0, 3)
+        .join(", ")}${activeStatuses.length > 3 ? "..." : ""}
                                   </div>
                                   <div class="filter-summary-line">
-                                    <strong>${activeMemberCount}/${totalMemberCount}</strong> members
+                                    <strong>${activeMemberCount}/${totalMemberCount}</strong> members: ${activeMembers
+        .slice(0, 4)
+        .join(", ")}${activeMembers.length > 4 ? "..." : ""}
                                   </div>
                                   <div class="filter-summary-line">
-                                    <strong>${activeSpaceCount}/${totalSpaceCount}</strong> spaces
+                                    <strong>${activeSpaceCount}/${totalSpaceCount}</strong> spaces: ${activeSpaces
+        .slice(0, 2)
+        .join(", ")}${activeSpaces.length > 2 ? "..." : ""}
                                   </div>
                                 </div>
                               </button>
                             </div>
                             
                             <div class="quick-filter-buttons">
-                              <button id="reset-filters-btn" class="control-btn"> Reset</button>
+                              <button id="reset-filters-btn" class="control-btn">🔄 Reset</button>
                               <button id="default-filters-btn" class="control-btn active">Default</button>
                             </div>
                           </div>
@@ -905,7 +1075,7 @@ class PulseAnalytics {
                                 <span class="toggle-slider"></span>
                                  Debug Mode
                             </label>
-                            <button id="pulse-refresh-btn" class="control-btn"> Refresh</button>
+                            <button id="pulse-refresh-btn" class="control-btn">🔄 Force Refresh</button>
                         </div>
                     </div>
                 </div>
@@ -1529,11 +1699,11 @@ class PulseAnalytics {
       });
     }
 
-    // Refresh button
+    // Refresh button (now does force refresh)
     const refreshBtn = this.container.querySelector("#pulse-refresh-btn");
     if (refreshBtn) {
       refreshBtn.addEventListener("click", () => {
-        this.loadData();
+        this.loadDataWithRefresh();
       });
     }
 
@@ -1691,6 +1861,7 @@ class PulseAnalytics {
 
   closeTaskDetailsModal() {
     if (this.currentModal) {
+      alert("s");
       document.body.removeChild(this.currentModal);
       this.currentModal = null;
       document.removeEventListener("keydown", this.handleModalKeydown.bind(this));
