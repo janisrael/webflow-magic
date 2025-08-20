@@ -529,6 +529,9 @@ class DashboardController {
             else if (this.activeTab === 'pulse' && typeof activeComponent.renderInitialState === 'function') {
                 activeComponent.renderInitialState();
             }
+            // else if (this.activeTab === 'pulse' && typeof activeComponent.checkForData === 'function') {
+            //     activeComponent.checkForData();
+            // }
         }
     }
 
