@@ -53,6 +53,7 @@ class PulseAnalytics {
     // Auto-load data directly - let the backend handle cache logic
     // this.loadData();
     this.checkForData();
+    // this.render();
   }
 
   async checkForData() {
@@ -1661,11 +1662,35 @@ class PulseAnalytics {
   }
 
   setupControlEvents() {
+    // STEP 1: Remove existing event listeners by cloning elements
+    const elementsToClone = [
+      "#pulse-date-picker",
+      "#pulse-today-btn",
+      "#pulse-yesterday-btn",
+      "#pulse-debug-toggle",
+      "#pulse-refresh-btn",
+      "#open-filters-btn",
+      "#reset-filters-btn",
+      "#default-filters-btn",
+      "#generate-data-btn",
+    ];
+
+    elementsToClone.forEach((selector) => {
+      const element = this.container.querySelector(selector);
+      if (element) {
+        const newElement = element.cloneNode(true);
+        element.parentNode.replaceChild(newElement, element);
+      }
+    });
+
+    // STEP 2: Add fresh event listeners
+
     // Date picker
     const datePicker = this.container.querySelector("#pulse-date-picker");
     if (datePicker) {
       datePicker.addEventListener("change", (e) => {
         this.selectedDate = e.target.value;
+        this.updateDateButtonStates();
         this.loadData();
       });
     }
@@ -1675,6 +1700,9 @@ class PulseAnalytics {
     if (todayBtn) {
       todayBtn.addEventListener("click", () => {
         this.selectedDate = new Date().toISOString().split("T")[0];
+        const datePicker = this.container.querySelector("#pulse-date-picker");
+        if (datePicker) datePicker.value = this.selectedDate;
+        this.updateDateButtonStates();
         this.loadData();
       });
     }
@@ -1686,6 +1714,9 @@ class PulseAnalytics {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         this.selectedDate = yesterday.toISOString().split("T")[0];
+        const datePicker = this.container.querySelector("#pulse-date-picker");
+        if (datePicker) datePicker.value = this.selectedDate;
+        this.updateDateButtonStates();
         this.loadData();
       });
     }
@@ -1699,10 +1730,13 @@ class PulseAnalytics {
       });
     }
 
-    // Refresh button (now does force refresh)
+    // REFRESH BUTTON - This was causing the double API calls!
     const refreshBtn = this.container.querySelector("#pulse-refresh-btn");
     if (refreshBtn) {
-      refreshBtn.addEventListener("click", () => {
+      refreshBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("🔄 Refresh button clicked - single event");
         this.loadDataWithRefresh();
       });
     }
@@ -1736,13 +1770,37 @@ class PulseAnalytics {
         }
       });
     }
+
+    // Generate data button
+    const generateBtn = this.container.querySelector("#generate-data-btn");
+    if (generateBtn) {
+      generateBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("🚀 Generate button clicked - single event");
+        this.loadData();
+      });
+    }
   }
 
   setupClickableWorkloadStats() {
+    // First, remove any existing event listeners to prevent duplicates
+    this.container
+      .querySelectorAll('.workload-stat[data-clickable="true"]')
+      .forEach((statElement) => {
+        // Clone the element to remove all event listeners
+        const newElement = statElement.cloneNode(true);
+        statElement.parentNode.replaceChild(newElement, statElement);
+      });
+
+    // Then add fresh event listeners
     this.container
       .querySelectorAll('.workload-stat[data-clickable="true"]')
       .forEach((statElement) => {
         statElement.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
           const username = statElement.getAttribute("data-username");
           const taskType = statElement.getAttribute("data-task-type");
           this.showTaskDetailsModal(username, taskType);
@@ -1751,9 +1809,13 @@ class PulseAnalytics {
   }
 
   showTaskDetailsModal(username, taskType) {
+    // CRITICAL: Close any existing modal first
+    this.closeTaskDetailsModal();
+
     const workload = this.data.member_workloads[username];
     if (!workload) return;
 
+    // ... rest of your existing modal code stays the same ...
     const allTasks = workload.tasks || [];
     let filteredTasks = [];
     let modalTitle = "";
@@ -1784,69 +1846,60 @@ class PulseAnalytics {
     const modal = document.createElement("div");
     modal.className = "task-details-modal";
     modal.innerHTML = `
-          <div class="task-details-content">
-            <div class="task-details-header">
-              <h3>${modalTitle} (${filteredTasks.length})</h3>
-              <button class="task-details-close">×</button>
-            </div>
-
-            <div class="task-details-list">
-              ${
-                filteredTasks.length === 0
-                  ? `<div class="task-details-empty">
-                    <p>No ${taskType === "all" ? "" : taskType + " "}tasks found</p>
-                  </div>`
-                  : filteredTasks
-                      .map(
-                        (task) => `
+      <div class="task-details-content">
+        <div class="task-details-header">
+          <h3>${modalTitle} (${filteredTasks.length})</h3>
+          <button class="task-details-close">×</button>
+        </div>
+        
+        <div class="task-details-list">
+          ${
+            filteredTasks.length === 0
+              ? `<div class="task-details-empty">
+                  <p>No ${taskType === "all" ? "" : taskType + " "}tasks found</p>
+                </div>`
+              : filteredTasks
+                  .map(
+                    (task) => `
                       <div class="task-item-modal">
                         <div class="task-item-header">
-                          <h4 class="task-item-title">${task.name || "Unnamed Task"}</h4>
+                          <h4 class="task-item-title">${task.name}</h4>
                           <div class="task-item-badges">
                             ${
                               task.priority
-                                ? `
-                              <span class="task-priority-badge task-priority-${
-                                task.priority.priority
-                              }">
-                                ${task.priority.priority.toUpperCase()}
-                              </span>
-                            `
+                                ? `<span class="task-priority-badge ${task.priority.priority}">${task.priority.priority}</span>`
                                 : ""
                             }
-                            <span class="task-status-badge">${task.status || "unknown"}</span>
+                            <span class="task-status-badge">${task.status}</span>
                           </div>
                         </div>
-
-                        <div class="task-item-meta">
-                          <p>📁 Project: ${task.project_name || "Unknown"}</p>
+                        <div class="task-item-details">
                           ${
                             task.due_date
-                              ? `
-                            <p>📅 Due: ${new Date(parseInt(task.due_date)).toLocaleDateString()}</p>
-                          `
+                              ? `<p>📅 Due: ${new Date(
+                                  parseInt(task.due_date)
+                                ).toLocaleDateString()}</p>`
                               : ""
                           }
                           ${
                             task.url
-                              ? `
-                            <p>🔗 <a href="${task.url}" target="_blank">Open in ClickUp</a></p>
-                          `
+                              ? `<p>🔗 <a href="${task.url}" target="_blank">Open in ClickUp</a></p>`
                               : ""
                           }
                         </div>
                       </div>
                     `
-                      )
-                      .join("")
-              }
-            </div>
-          </div>
-        `;
+                  )
+                  .join("")
+          }
+        </div>
+      </div>
+    `;
 
     document.body.appendChild(modal);
     this.currentModal = modal;
 
+    // Setup close events
     const closeBtn = modal.querySelector(".task-details-close");
     closeBtn.addEventListener("click", () => this.closeTaskDetailsModal());
 
@@ -1856,15 +1909,24 @@ class PulseAnalytics {
       }
     });
 
-    document.addEventListener("keydown", this.handleModalKeydown.bind(this));
+    // Keyboard close
+    this.modalKeyHandler = (e) => {
+      if (e.key === "Escape") {
+        this.closeTaskDetailsModal();
+      }
+    };
+    document.addEventListener("keydown", this.modalKeyHandler);
   }
 
   closeTaskDetailsModal() {
     if (this.currentModal) {
-      alert("s");
       document.body.removeChild(this.currentModal);
       this.currentModal = null;
-      document.removeEventListener("keydown", this.handleModalKeydown.bind(this));
+    }
+
+    if (this.modalKeyHandler) {
+      document.removeEventListener("keydown", this.modalKeyHandler);
+      this.modalKeyHandler = null;
     }
   }
 

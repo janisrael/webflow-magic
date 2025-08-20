@@ -2524,3 +2524,9 @@
   .debug-toggle input[type="checkbox"]:checked + .toggle-slider::before {
     transform: translateX(22px);
   }
+
+
+  /* ===== */
+
+
+  

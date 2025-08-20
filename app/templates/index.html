@@ -473,6 +473,8 @@ class DashboardController {
 
     loadComponents() {
         // Initialize all components but don't load their data
+
+        
         if (typeof PulseAnalytics !== 'undefined') {
             this.components.pulse = new PulseAnalytics('pulse-widget');
         }
