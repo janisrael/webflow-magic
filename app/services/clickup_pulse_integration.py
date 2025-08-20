@@ -3346,7 +3346,7 @@ class ClickUpPulseIntegration:
             return {}
 
 
-    def generate_pulse_analytics(self, target_date=None, debug=False, status_filters=None, member_filters=None, space_filters=None):
+    def generate_pulse_analytics(self, target_date=None, debug=False, status_filters=None, member_filters=None, space_filters=None, force_refresh=False):
         """
         Generate comprehensive pulse analytics from ClickUp data with JSON caching
         """
@@ -3364,13 +3364,6 @@ class ClickUpPulseIntegration:
             else:
                 target_date = datetime.now().date()
 
-            if space_filters and len(space_filters) > 1:
-                return self._generate_multi_space_pulse_data(target_date, debug, status_filters, member_filters, space_filters)
-            else:
-                # Single space - use existing logic
-                self.space_id = space_filters[0] if space_filters else '90132462540'
-                return self._generate_fresh_pulse_data(target_date, debug, status_filters, member_filters)
-            
             print(f"🗓️ Analyzing data for: {target_date}")
             
             # For backdates, ONLY look for cached files from that specific date
@@ -3392,24 +3385,33 @@ class ClickUpPulseIntegration:
                         return demo_data
                     return self._get_demo_data_with_message(f"No data available for {target_date}")
             
-            # For today's date, try recent cache first (3-hour rule)
-            if target_date == datetime.now().date():
+            # For today's date, try recent cache first (3-hour rule) - unless force refresh
+            if target_date == datetime.now().date() and not force_refresh:
                 cached_data = self._get_cached_pulse_data()
                 if cached_data and not debug:
                     print("📊 Using recent cached pulse data")
                     return cached_data
             
+            if force_refresh:
+                print("🔄 Force refresh requested - bypassing cache...")
+            
             print("🔄 Generating fresh pulse data from ClickUp...")
             
             # Generate fresh data using ClickUp API
-            # fresh_data = self._generate_fresh_pulse_data(target_date, debug, status_filters)
-            # fresh_data = self._generate_fresh_pulse_data(target_date, debug, status_filters, member_filters)
-            fresh_data = self._generate_multi_space_pulse_data(target_date, debug, status_filters, member_filters, space_filters)
-            print(f"fresssshhhh {fresh_data}")
+            if space_filters and len(space_filters) > 1:
+                fresh_data = self._generate_multi_space_pulse_data(target_date, debug, status_filters, member_filters, space_filters)
+            else:
+                # Single space - use existing logic
+                self.space_id = space_filters[0] if space_filters else '90132462540'
+                fresh_data = self._generate_fresh_pulse_data(target_date, debug, status_filters, member_filters)
+            
+            print(f"🔍 Fresh data result: {type(fresh_data)}")
+            
             if fresh_data and fresh_data.get('member_workloads'):
-                print(f'thus is fresh data')
+                print(f'✅ Fresh data generated successfully')
                 # Save the fresh data (only if analyzing today)
                 if target_date == datetime.now().date():
+                    print(f"💾 Saving fresh data to JSON file...")
                     self._save_pulse_data(fresh_data)
                 return fresh_data
             else:
@@ -3712,7 +3714,7 @@ class ClickUpPulseIntegration:
         Save pulse data to JSON file with timestamp
         """
         try:
-            print(f"💾 Saved pSavedSavedSavedSavedSavedulse data to:")
+            print(f"💾 Attempting to save pulse data...")
             timestamp = datetime.now().strftime('%Y%m%d_%H%M')
             filename = f"pulse_{timestamp}.json"
             filepath = os.path.join(self.output_dir, filename)
