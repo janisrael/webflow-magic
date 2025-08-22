@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup, Comment, NavigableString
 from urllib.parse import urljoin
 import re
 
-FRAMER_SITE_URL = "https://goodness-tetragon-388195.framer.app/"
+FRAMER_SITE_URL = "https://trusting-evidence-175718.framer.app/"
 THEME_NAME = "converted-theme"
 OUTPUT_DIR = os.path.abspath(THEME_NAME)
 

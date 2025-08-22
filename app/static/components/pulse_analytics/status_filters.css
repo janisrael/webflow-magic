@@ -1158,7 +1158,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #8885f8;
+    /* border-bottom: 1px solid #e5e7eb; */
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
   }
@@ -1312,8 +1313,8 @@
   
   .filter-modal-footer {
     padding: 20px 24px;
-    border-top: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-top: 1px solid #4f46e5;
+    /* background: #f9fafb; */
     display: flex;
     justify-content: space-between;
     align-items: center;

@@ -623,7 +623,6 @@ class PulseAnalytics {
 
   // FIXED: Filter modal management with animations
   showFilterModal() {
-    f;
     // this.hideFilterModal();
 
     const modalHTML = this.renderFilterModal();

@@ -1895,7 +1895,8 @@
   }
   
   .filter-modal-content {
-    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    /* background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%); */
+    background: #1e293b;
     border-radius: 20px;
     width: 90%;
     max-width: 900px;
@@ -1923,7 +1924,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 24px 28px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+    background: linear-gradient(135deg, #4f46e5 0%, #6b6eff 100%);
     color: white;
     position: relative;
     overflow: hidden;
@@ -1982,7 +1984,7 @@
     padding: 28px;
     max-height: 60vh;
     overflow-y: auto;
-    background: linear-gradient(to bottom, #ffffff, #f8fafc);
+    /* background: linear-gradient(to bottom, #ffffff, #f8fafc); */
   }
   
   .filter-modal-body::-webkit-scrollbar {
@@ -2005,11 +2007,13 @@
   
   .filter-section {
     margin-bottom: 36px;
-    background: white;
+    /* background: white; */
     border-radius: 16px;
     padding: 24px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(102, 126, 234, 0.1);
+    /* border: 1px solid rgba(102, 126, 234, 0.1); */
+    background: #0f172a;
+    border: 1px solid #334155;
     position: relative;
     overflow: hidden;
   }
@@ -2034,7 +2038,8 @@
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 2px solid #f1f5f9;
+    /* border-bottom: 2px solid #f1f5f9; */
+    border-bottom: none;
   }
   
   .filter-section-title {
@@ -2042,7 +2047,7 @@
     align-items: center;
     gap: 12px;
     font-weight: 700;
-    color: #1e293b;
+    color: #9da9bb;
     font-size: 16px;
   }
   
@@ -2198,8 +2203,9 @@
   
   .filter-modal-footer {
     padding: 24px 28px;
-    border-top: 1px solid #e2e8f0;
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    /* border-top: 1px solid #e2e8f0; */
+    /* background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); */
+    background: linear-gradient(135deg, #222d40 0%, #2a3952);
     display: flex;
     justify-content: space-between;
     align-items: center;
