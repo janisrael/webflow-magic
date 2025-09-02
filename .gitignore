@@ -3,3 +3,52 @@ auth.json
 app/webflow-temp
 app/WebflowStarter_old
 app/WebflowStarter_working
+app/webflow_export
+*.zip
+/final-theme.env
+.env
+.env
+.env
+.env
+example.env
+
+# Output and cache files
+app/output/
+index.html
+
+# Python cache files
+app/services/__pycache__/calendar_tasks_service.cpython-312.pyc
+app/services/__pycache__/google_calendar_service.cpython-312.pyc
+app/services/__pycache__/priorities_integration.cpython-312.pyc
+app/__pycache__/wf.cpython-312.pyc
+app/services/__pycache__/clickup_pulse_integration.cpython-312.pyc
+
+# Test files with secrets
+test_calendar_30_days.py
+app/test_basic_models.py
+app/test_huggingface_models.py
+
+# General Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+/app/output
+/app/seo_reports
+*.pyc

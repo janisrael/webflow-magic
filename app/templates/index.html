@@ -1,145 +1,773 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Webflow to WordPress Converter</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SourceSelect Dashboard v16</title>
+
+    <!-- ADD THESE REACT SCRIPTS -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <style>
+        /* Minimal CSS to make modal visible */
+        .settings-modal-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 99999 !important;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .settings-modal-overlay.active {
+            display: flex !important;
+        }
+        
+        .settings-modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        .settings-modal {
+            position: relative;
+            background: #1a1a2e;
+            border-radius: 16px;
+            max-width: 1024px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: auto;
+            z-index: 1;
+        }
+        </style>
+
+    <!-- ADD YOUR CALENDAR PICKER SCRIPT -->
+    <script src="{{ url_for('static', filename='components/global_calendar_picker/GlobalCalendarPicker.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse_analytics/pulse_analytics_clickable.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse_analytics/status_filters.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/shared/dashboard-core.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/settings_modal/settings_modal.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/projects_tracker/projects_tracker.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/clickup_analytics/clickup_analytics.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/calendar_analytics/calendar_analytics.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/pulse/pulse.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/tools/webflow_importer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='components/global_calendar_picker/calendar_picker.css') }}">
+    
+    <!-- Material Icons Font -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+   
 </head>
-<body class="bg-light py-5">
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>
+                     SourceSelect Dashboard
+                    <span style="font-size: 1rem; opacity: 0.8;">v16</span>
+                </h1>
+                <div class="header-subtitle">Last updated: <span id="lastUpdated">8/8/2025 at 12:19:38 AM</span></div>
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    Live Data
+                </div>
 
-  <div class="container">
-    <div class="card shadow-lg p-4 mx-auto" style="max-width: 700px;">
-      <h2 class="text-center mb-4 text-primary">Webflow to WordPress Converter</h2>
-      
-      <form action="/convert" method="POST" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="theme-name" class="form-label">Template Name</label>
-          <input type="text" class="form-control" id="theme-name" name="theme_name" required placeholder="e.g. converted-theme">
-        </div>
-
-        <div class="mb-3">
-          <label for="webflow-zip" class="form-label">Webflow ZIP File</label>
-          <input type="file" class="form-control" id="webflow-zip" name="webflow_zip" required>
-        </div>
-
-        <div class="mb-3">
-          <label for="screenshot" class="form-label">Upload Theme Screenshot</label>
-          <input type="file" class="form-control" id="screenshot" name="screenshot" accept=".png,.jpg,.jpeg">
-        </div>
-
-        <div class="mb-3">
-          <div class="form-check form-switch mb-2">
-            <input class="form-check-input" type="checkbox" id="enable-cms" name="enable_cms">
-            <label class="form-check-label" for="enable-cms">Include CMS Content</label>
-          </div>
-          
-          <div id="cms-fields" style="display: none;">
-            <div class="mb-3">
-              <label for="api-token" class="form-label">Webflow API Token</label>
-              <input type="password" class="form-control" id="api-token" name="api_token" 
-                     placeholder="Get this from Project Settings → API Access">
+                <div class="header-actions">
+                    <!-- Settings Button -->
+                    <button class="header-action-btn" id="settings-btn" title="Settings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6"></path>
+                            <path d="M1 12h6m6 0h6"></path>
+                            <path d="M4.22 4.22l1.42 1.42m0 12.72l-1.42 1.42M19.78 4.22l-1.42 1.42m0 12.72l1.42 1.42"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- User Profile Button -->
+                    <button class="user-avatar-btn" id="user-btn" title="User Profile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="notification-badge">3</span>
+                    </button>
+                </div>
             </div>
-            <div class="mb-3">
-              <label for="site-id" class="form-label">Webflow Site ID</label>
-              <input type="text" class="form-control" id="site-id" name="site_id" 
-                     placeholder="Found in Project Settings → API Access">
+        </div>
+
+        <!-- Date Filters -->
+        <div class="date-filters">
+            <input type="date" class="date-input" value="2025-08-08" id="dateFilter">
+            <button class="filter-btn" data-period="yesterday">Yesterday</button>
+            <button class="filter-btn active" data-period="today">Today</button>
+            <button class="filter-btn" data-period="week">Last Week</button>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab" data-tab="pulse">Pulse</button>
+            <button class="nav-tab" data-tab="clickup">ClickUp Analytics</button>
+            <button class="nav-tab active" data-tab="projects">Priorities</button>
+            <button class="nav-tab" data-tab="calendar">Calendar Dashboard</button>
+            <button class="nav-tab" data-tab="tools">Tools</button>
+        </div>
+
+        <!-- Tab Content Container -->
+        <div class="tab-content-container">
+
+            <!-- Pulse Widget -->
+            <div class="tab-content" id="pulse-tab">
+                <div id="pulse-widget"></div>
+            </div>
+
+
+            <!-- ClickUp Analytics Widget -->
+            <div class="tab-content" id="clickup-tab">
+                <div id="clickup-analytics-widget"></div>
+            </div>
+
+            <!-- Priorities Widget -->
+            <div class="tab-content active" id="projects-tab">
+                <div id="projects-tracker-widget"></div>
+            </div>
+
+            <!-- Calendar Analytics Widget -->
+            <div class="tab-content" id="calendar-tab">
+                <div id="calendar-analytics-widget"></div>
             </div>
             
-            <!-- Custom Collection Selectors -->
-            <div class="mb-3">
-              <label for="custom-selectors" class="form-label">Custom Collection CSS Selectors</label>
-              <textarea class="form-control" id="custom-selectors" name="custom_selectors" rows="4" 
-                        placeholder="Enter CSS selectors for your collection containers, one per line:
-.my-team-grid
-.portfolio-slider
-.testimonial-carousel
-#reviews-section
-.dynamic-content"></textarea>
-              <div class="form-text">
-                Add CSS selectors (classes, IDs, attributes) that contain your CMS collections. 
-                Examples: <code>.team-grid</code>, <code>#portfolio-slider</code>, <code>[data-collection="reviews"]</code>
-              </div>
-            </div>
-          </div>
-        </div>
+            <!-- Tools Tab - Webflow Importer -->
+            <form id="webflow-importer-form" >
+                  
+            <div class="tab-content" id="tools-tab">
+              <div class="webflow-importer-widget" id="webflow-importer-widget">
+                  <div class="section-header">
+                      <h3 class="section-title"> Webflow to WordPress Converter + AI powered SEO</h3>
+                  </div>
+                  
+                  <div class="converter-cards">
+                      <!-- Template Settings Card -->
+                      <div class="converter-card">
+                          <div class="card-header">
+                              <h4 class="card-title">Template Settings</h4>
+                          </div>
+                          <div class="card-body">
+                              <div class="form-group">
+                                  <label class="form-label">Template Name</label>
+                                  <input type="text" class="form-input" id="theme-name" name="theme_name" required placeholder="e.g. converted-theme">
+                              </div>
+                              <div class="form-group">
+                                <label class="form-label">Webflow ZIP File</label>
+                                <div class="file-upload">
+                                    <input type="file" id="webflow-zip" class="file-input" name="webflow_zip" required>
+                                    <label for="webflow-zip" class="file-label">
+                                        <div>Click to upload Webflow export ZIP</div>
+                                        <div class="file-name" id="zip-file-name">No file selected</div>
+                                    </label>
+                                </div>
+                            </div>
         
+                            <div class="form-group">
+                                <label class="form-label">Theme Screenshot</label>
+                                <div class="file-upload">
+                                    <input type="file" id="screenshot" class="file-input" name="screenshot" accept=".png,.jpg,.jpeg">
+                                    <label for="screenshot" class="file-label">
+                                        <div>Click to upload theme screenshot</div>
+                                        <div class="file-name" id="screenshot-file-name">No file selected</div>
+                                    </label>
+                                </div>
+                            </div>
+                              <div class="form-group">
+                                  <label class="form-label">Additional Options</label>
+                                  <div class="checkbox-options">
+                                      <label class="checkbox-option">
+                                          <input type="checkbox" name="auto_mailer" checked>
+                                          <span class="checkmark"></span>
+                                          <span class="option-label">Install Auto Mailer Plugin</span>
+                                      </label>
+                                      <label class="checkbox-option">
+                                          <input type="checkbox" name="page_creator" checked>
+                                          <span class="checkmark"></span>
+                                          <span class="option-label">Install Auto Page Creator Plugin</span>
+                                      </label>
+                                      <label class="checkbox-option">
+                                          <input type="checkbox" name="backup_nas">
+                                          <span class="checkmark"></span>
+                                          <span class="option-label">Duplicate Theme to NAS Backup</span>
+                                      </label>
+                                      <label class="checkbox-option">
+                                          <input type="checkbox" name="optimize_images">
+                                          <span class="checkmark"></span>
+                                          <span class="option-label">Optimize Images During Conversion</span>
+                                      </label>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <!-- SEO Optimization Card -->
+                      <div class="converter-card">
+                          <div class="card-header">
+                              <div class="card-title"> AI-Powered SEO Optimization</div>
+                              <label class="toggle-switch">
+                                  <input type="checkbox" id="enable-seo" name="enable_seo">
+                                  <span class="toggle-slider-tools"></span>
+                              </label>
+                          </div>
+                          <div id="seo-fields" style="display: none;">
+                              <div class="card-body">
+                                  
+                                  
+                                  <div class="form-group">
+                                      <label for="business-type" class="form-label">Business Type (Optional)</label>
+                                        <input type="text" class="form-control form-input" id="business-type" name="business_type" 
+                                        placeholder="e.g., Restaurant, Law Firm, Tech Startup, E-commerce, Consulting..." 
+                                        list="business-types">
+                                        <datalist id="business-types">
+                                          <option value="Restaurant">
+                                          <option value="Retail Store">
+                                          <option value="Service Business">
+                                          <option value="Healthcare">
+                                          <option value="Technology">
+                                          <option value="Education">
+                                          <option value="Real Estate">
+                                          <option value="Legal Services">
+                                          <option value="Consulting">
+                                          <option value="E-commerce">
+                                          <option value="Manufacturing">
+                                          <option value="Financial Services">
+                                          <option value="Marketing Agency">
+                                          <option value="Non-profit">
+                                          <option value="Entertainment">
+                                        </datalist>
+                                      <small class="form-help">Helps optimize SEO for your specific industry</small>
+                                  </div>
+                                  
+                                  <div class="form-group">
+                                      <label class="form-label">Target Location (Optional)</label>
+                                      <input type="text" class="form-input" id="target-location" name="target_location" 
+                                             placeholder="e.g. New York, NY or London, UK">
+                                      <small class="form-help">For local SEO optimization and geo-targeted keywords</small>
+                                  </div>
+                                  
+                                  <div class="form-group">
+                                      <label class="form-label">OpenAI API Key (Optional)</label>
+                                      <input type="text" class="form-input" id="openai-api-key" name="openai_api_key" 
+                                             placeholder="sk-...">
+                                      <small class="form-help">For advanced AI-powered SEO content generation. Uses fallback optimization if not provided.</small>
+                                  </div>
+                                  
+                                  <div class="form-group">
+                                      <label class="form-label">SerpAPI Key (Optional)</label>
+                                      <input type="texgt" class="form-input" id="serp-api-key" name="serp_api_key" 
+                                             placeholder="Get from serpapi.com">
+                                      <small class="form-help">For real-time Google Trends data. Uses curated trending keywords if not provided.</small>
+                                  </div>
 
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary">Convert Now</button>
-        </div>
-      </form>
+                                  <div class="seo-features">
+                                    <div class="feature-highlight">
+                                        <div class="feature-icon"></div>
+                                        <div>
+                                            <strong>Trending Keywords</strong>
+                                            <p>Automatically integrates current trending keywords using Google Trends and AI analysis</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature-highlight">
+                                        <div class="feature-icon"></div>
+                                        <div>
+                                            <strong>SEO Scoring</strong>
+                                            <p>Each page gets a detailed SEO score with actionable improvement recommendations</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature-highlight">
+                                        <div class="feature-icon"></div>
+                                        <div>
+                                            <strong>AI Content Optimization</strong>
+                                            <p>OpenAI-powered meta titles, descriptions, and schema markup generation</p>
+                                        </div>
+                                    </div>
+                                </div>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <!-- CMS Settings Card -->
+                      <div class="converter-card">
+                          <div class="card-header">
+                              <div class="card-title">CMS Settings</div>
+                              <label class="toggle-switch">
+                                  <input type="checkbox" id="enable-cms" name="enable_cms">
+                                  <span class="toggle-slider-tools"></span>
+                              </label>
+                          </div>
+                          <div id="cms-fields" style="display: none;">
+                              <div class="card-body">
+                                  <div class="form-group">
+                                      <label class="form-label">Webflow API Token</label>
+                                      <input type="text" class="form-input" id="api-token" name="api_token" 
+                                             placeholder="Get this from Project Settings → API Access">
+                                  </div>
+                                  
+                                  <div class="form-group">
+                                      <label class="form-label">Webflow Site ID</label>
+                                      <input type="text" class="form-input" id="site-id" name="site_id" 
+                                             placeholder="Found in Project Settings → API Access">
+                                  </div>
+                                  
+                                  <div class="form-group">
+                                      <label class="form-label">Custom Collection CSS Selectors</label>
+                                      <textarea class="form-input" id="custom-selectors" name="custom_selectors" rows="10"
+                                                placeholder="Enter CSS selectors for your collection containers, one per line:
+          .my-team-grid
+          .portfolio-slider
+          .testimonial-carousel
+          #reviews-section
+          .dynamic-content"></textarea>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <!-- Action Bar -->
+                  <div class="action-bar">
+                    
+                        <!-- SEO Report Button (initially hidden) -->
+                        <div id="seo-reports-url"></div>
+                        
+                        <!-- Convert Now Button -->
+                          
+                        <button type="submit" class="convert-button" id="start-import">
+                          <span class="button-icon"></span>
+                          <span class="button-text">Convert Now</span>
+                      </button>
+                 
 
-      <!-- Theme Management Section -->
-      <!-- <div class="mt-4 pt-3 border-top">
-        <h5 class="mb-3">Theme Management</h5>
-        <div class="row">
-          <div class="col-md-8">
-            <input type="text" class="form-control" id="theme-to-delete" placeholder="Enter theme name to delete">
+
+            
+                  </div>
+                  
+                  <!-- Progress and Status -->
+                  <div class="status-container">
+                      <div class="progress-container">
+                          <div class="progress-bar">
+                              <div class="progress-fill" id="import-progress-bar"></div>
+                          </div>
+                          <div class="progress-status">
+                              <span class="percentage">0%</span>
+                              <span class="current-action">Ready to start</span>
+                          </div>
+                      </div>
+                      
+                      <div class="status-log" id="status-output">
+                          
+                      </div>
+                  </div>
+              </div>
           </div>
-          <div class="col-md-4">
-            <button type="button" class="btn btn-danger w-100" id="delete-theme-btn">Delete Theme</button>
-          </div>
+          
+              <!-- <div class="action-bar">
+                  <button type="submit" class="convert-button" id="start-import">
+                      <span class="button-icon">🔄</span>
+                      <span class="button-text">Convert Now</span>
+                  </button>
+              </div> -->
+          </form>
+     
         </div>
-        <div class="form-text mt-2">
-          Delete previously generated theme files from the server.
-        </div>
-      </div> -->
-
-      <div class="status mt-4">
-        <h5>Status:</h5>
-        <pre id="status-output" class="bg-light border p-2 rounded">Waiting for input...</pre>
-      </div>
     </div>
-  </div>
 
-  <!-- Bootstrap Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Your script -->
-  <script src="static/script.js"></script>
+    <!-- Core Dashboard Scripts -->
+    <!-- <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="{{ url_for('static', filename='components/global_calendar_picker/GlobalCalendarPicker.js') }}"></script> -->
+    <script src="{{ url_for('static', filename='components/shared/dashboard-core.js') }}"></script>
+    <script src="{{ url_for('static', filename='components/settings_modal/settings_modal.js') }}"></script>
+    <!-- Component Scripts -->
+    <script src="{{ url_for('static', filename='components/clickup_analytics/clickup_analytics.js') }}"></script>
+    <script src="{{ url_for('static', filename='components/pulse/pulse.js') }}"></script>
+    <script src="{{ url_for('static', filename='components/projects_tracker/projects_tracker.js') }}"></script>
+    <script src="{{ url_for('static', filename='components/calendar_analytics/calendar_analytics.js') }}"></script>
+    <script src="{{ url_for('static', filename='components/tools/webflow_importer.js') }}"></script>
 
-  <script>
-  document.getElementById('enable-cms').addEventListener('change', function() {
-    document.getElementById('cms-fields').style.display = 
-      this.checked ? 'block' : 'none';
-  });
-
-  // Delete theme functionality
-  document.getElementById('delete-theme-btn').addEventListener('click', function() {
-    const themeName = document.getElementById('theme-to-delete').value.trim();
-    if (!themeName) {
-      alert('Please enter a theme name to delete');
-      return;
+    <!-- Main Dashboard Controller -->
+    <script>
+        // Updated Dashboard Controller - No Auto Data Loading
+class DashboardController {
+    constructor() {
+        this.activeTab = 'projects';
+        this.components = {};
+        this.init();
     }
 
-    if (!confirm(`Are you sure you want to delete the theme "${themeName}"?`)) {
-      return;
+    init() {
+        this.setupTabNavigation();
+        this.setupDateFilters();
+        this.loadComponents();
+        this.updateTimestamp();
     }
 
-    fetch('/delete-theme', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ theme_name: themeName })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert(`Theme "${themeName}" deleted successfully!`);
-        document.getElementById('theme-to-delete').value = '';
-      } else {
-        alert(`Error: ${data.error}`);
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('An error occurred while deleting the theme');
+    setupTabNavigation() {
+        const tabButtons = document.querySelectorAll('.nav-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.dataset.tab;
+                this.switchTab(targetTab, tabButtons, tabContents);
+            });
+        });
+    }
+
+    switchTab(targetTab, tabButtons, tabContents) {
+        // Update active tab button
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`[data-tab="${targetTab}"]`).classList.add('active');
+        
+        // Update active tab content with animation
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+            content.style.opacity = '0';
+        });
+        
+        setTimeout(() => {
+            const targetContent = document.getElementById(`${targetTab}-tab`);
+            targetContent.classList.add('active');
+            targetContent.style.opacity = '1';
+            
+            // REMOVED: Automatic component refresh
+            // this.refreshComponent(targetTab);
+            
+            // NEW: Only refresh component UI without loading data
+            this.refreshComponentUI(targetTab);
+            
+            // Dispatch tab activation events for components that need them
+            document.dispatchEvent(new CustomEvent('tabChanged', { detail: { tab: targetTab } }));
+            if (targetTab === 'pulse') {
+                console.log('🎯 Pulse tab activated!');
+                document.dispatchEvent(new CustomEvent('pulseTabActivated'));
+            }
+        }, 150);
+
+        this.activeTab = targetTab;
+    }
+
+    setupDateFilters() {
+        const filterButtons = document.querySelectorAll('.filter-btn[data-period]');
+        const dateInput = document.getElementById('dateFilter');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const period = button.dataset.period;
+                
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Update date input based on period
+                const today = new Date();
+                let targetDate = today;
+                
+                switch(period) {
+                    case 'yesterday':
+                        targetDate.setDate(today.getDate() - 1);
+                        break;
+                    case 'week':
+                        targetDate.setDate(today.getDate() - 7);
+                        break;
+                    case 'today':
+                    default:
+                        // Keep today
+                        break;
+                }
+                
+                if (dateInput) {
+                    dateInput.value = targetDate.toISOString().split('T')[0];
+                }
+                
+                // Notify active component of date change without auto-loading
+                this.notifyDateChange(targetDate);
+            });
+        });
+
+        if (dateInput) {
+            dateInput.addEventListener('change', (e) => {
+                // Update filter buttons
+                const selectedDate = new Date(e.target.value);
+                const today = new Date().toISOString().split('T')[0];
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                if (e.target.value === today) {
+                    document.querySelector('[data-period="today"]')?.classList.add('active');
+                } else if (e.target.value === yesterdayStr) {
+                    document.querySelector('[data-period="yesterday"]')?.classList.add('active');
+                }
+                
+                this.notifyDateChange(selectedDate);
+            });
+        }
+    }
+
+    loadComponents() {
+        // Initialize all components but don't load their data
+
+        
+        if (typeof PulseAnalytics !== 'undefined') {
+            this.components.pulse = new PulseAnalytics('pulse-widget');
+            console.log('✅ PulseAnalytics component created:', this.components.pulse);
+            window.pulseComponent = this.components.pulse; // Make it globally accessible for debugging
+        }
+        
+        if (typeof ClickUpAnalytics !== 'undefined') {
+            this.components.clickup = new ClickUpAnalytics('clickup-analytics-widget');
+        }
+        
+        if (typeof ProjectsTracker !== 'undefined') {
+            this.components.projects = new ProjectsTracker('projects-tracker-widget');
+        }
+        
+        if (typeof CalendarAnalytics !== 'undefined') {
+            this.components.calendar = new CalendarAnalytics('calendar-analytics-widget');
+            window.calendarAnalytics = this.components.calendar;
+        }
+        
+        if (typeof WebflowImporter !== 'undefined') {
+            this.components.tools = new WebflowImporter('tools-widget');
+        }
+
+        // Load initial data only for the active tab's component if it has auto-load enabled
+        this.loadInitialActiveComponent();
+    }
+
+    // NEW: Only refresh UI without loading data
+    refreshComponentUI(componentName) {
+        const component = this.components[componentName];
+        if (component) {
+            // Check if component has a refreshUI method (for non-data updates)
+            if (typeof component.refreshUI === 'function') {
+                component.refreshUI();
+            }
+            // For pulse component, just ensure it shows the initial state
+            else if (componentName === 'pulse' && typeof component.renderInitialState === 'function') {
+                component.renderInitialState();
+            }
+            // For other components, only refresh if they already have data
+            else if (typeof component.refresh === 'function' && component.dataLoaded) {
+                component.refresh();
+            }
+        }
+    }
+
+    // UPDATED: Only auto-load for components that should auto-load (not pulse)
+    loadInitialActiveComponent() {
+        const activeComponent = this.components[this.activeTab];
+        if (activeComponent) {
+            // Only auto-load for specific components (not pulse)
+            if (this.activeTab !== 'pulse' && typeof activeComponent.loadData === 'function') {
+                activeComponent.loadData();
+            }
+            // For pulse, just ensure initial state is rendered
+            else if (this.activeTab === 'pulse' && typeof activeComponent.renderInitialState === 'function') {
+                activeComponent.renderInitialState();
+            }
+            // else if (this.activeTab === 'pulse' && typeof activeComponent.checkForData === 'function') {
+            //     activeComponent.checkForData();
+            // }
+        }
+    }
+
+    // UPDATED: Manual refresh method (can be called by user action)
+    refreshComponent(componentName) {
+        const component = this.components[componentName];
+        if (component && typeof component.refresh === 'function') {
+            component.refresh();
+        }
+    }
+
+    refreshActiveComponent() {
+        this.refreshComponent(this.activeTab);
+    }
+
+    // NEW: Notify components of date changes without forcing data load
+    notifyDateChange(date) {
+        const activeComponent = this.components[this.activeTab];
+        if (activeComponent) {
+            // Update component's selected date if it has that property
+            if (activeComponent.selectedDate !== undefined) {
+                activeComponent.selectedDate = date.toISOString().split('T')[0];
+            }
+            
+            // Update date picker if component has one
+            if (typeof activeComponent.updateDateDisplay === 'function') {
+                activeComponent.updateDateDisplay();
+            }
+        }
+    }
+
+    updateTimestamp() {
+        const now = new Date();
+        const timestamp = now.toLocaleString('en-US', {
+            month: 'numeric',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+        
+        const lastUpdatedElement = document.getElementById('lastUpdated');
+        if (lastUpdatedElement) {
+            lastUpdatedElement.textContent = timestamp;
+        }
+        
+        // Update every 30 seconds
+        setTimeout(() => this.updateTimestamp(), 30000);
+    }
+
+    // NEW: Manual data loading methods for user-triggered actions
+    loadComponentData(componentName) {
+        const component = this.components[componentName];
+        if (component && typeof component.loadData === 'function') {
+            component.loadData();
+        }
+    }
+
+    loadActiveComponentData() {
+        this.loadComponentData(this.activeTab);
+    }
+
+    // NEW: Global refresh button functionality
+    refreshAll() {
+        Object.keys(this.components).forEach(componentName => {
+            const component = this.components[componentName];
+            if (component && typeof component.refresh === 'function' && component.dataLoaded) {
+                component.refresh();
+            }
+        });
+    }
+}
+
+// Initialize dashboard when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.dashboard = new DashboardController();
+    
+    // Optional: Add global keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + R to refresh active component
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            e.preventDefault();
+            if (window.dashboard) {
+                window.dashboard.refreshActiveComponent();
+            }
+        }
+        
+        // Ctrl/Cmd + Shift + R to refresh all components
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+            e.preventDefault();
+            if (window.dashboard) {
+                window.dashboard.refreshAll();
+            }
+        }
     });
-  });
-</script>
+});
+
+// Enhanced toggle handlers (keep your existing code)
+document.addEventListener('DOMContentLoaded', function() {
+    // CMS Toggle
+    const cmsToggle = document.getElementById('enable-cms');
+    const cmsFields = document.getElementById('cms-fields');
+
+    if (cmsToggle && cmsFields) {
+        cmsFields.style.display = cmsToggle.checked ? 'block' : 'none';
+        
+        cmsToggle.addEventListener('change', function() {
+            cmsFields.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // SEO Toggle
+    const seoToggle = document.getElementById('enable-seo');
+    const seoFields = document.getElementById('seo-fields');
+
+    if (seoToggle && seoFields) {
+        seoFields.style.display = seoToggle.checked ? 'block' : 'none';
+        
+        seoToggle.addEventListener('change', function() {
+            seoFields.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+});
+    </script>
+    
+    <style>
+        /* Additional SEO-specific styles */
+        .seo-features {
+          margin-bottom: 20px;
+    padding: 16px;
+    background: rgb(99 102 241 / 22%);
+    border-radius: 8px;
+    border-left: 3px solid #6366f1;
+        }
+        
+        .feature-highlight {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .feature-highlight:last-child {
+            margin-bottom: 0;
+        }
+        
+        .feature-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .feature-highlight strong {
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .feature-highlight p {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+        
+        .form-help {
+            display: block;
+            color: #64748b;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            line-height: 1.3;
+        }
+        
+        select.form-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 8px center;
+            background-repeat: no-repeat;
+            background-size: 16px 16px;
+            padding-right: 32px;
+        }
+    </style>
 </body>
 </html>

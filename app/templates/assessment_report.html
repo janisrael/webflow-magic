@@ -1,0 +1,3560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Assessment Report - {{ assessment.generated_at.split('T')[0] if assessment.generated_at else assessment.cache_info.generated_date if assessment.cache_info else 'Details' }}</title>
+    
+    <!-- Chart.js for professional charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Professional styling -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+        
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .report-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .report-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .report-title .material-icons {
+            font-size: 3rem;
+        }
+        
+        .report-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .report-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .meta-item .material-icons {
+            font-size: 1.1rem;
+        }
+        
+        .cache-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            opacity: 0.8;
+        }
+        
+        .cache-item {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #e2e8f0;
+        }
+        
+        .cache-item .material-icons {
+            font-size: 1rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .action-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .action-btn .material-icons {
+            font-size: 1.2rem;
+        }
+        
+        .email-btn:hover {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+        
+        .download-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Recommendations Section Styling */
+        .recommendations-section {
+            margin-bottom: 40px;
+        }
+        
+        .recommendations-section h3 {
+            color: #1e293b;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+        
+        .recommendations-section h3 .material-icons {
+            font-size: 1.8rem;
+            color: #f59e0b;
+        }
+        
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .recommendation-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-color: #3b82f6;
+        }
+        
+        .recommendation-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .recommendation-card:hover .recommendation-glow {
+            opacity: 1;
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow-pulse {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .priority-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .priority-badge.priority-high {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .priority-badge.priority-medium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        
+        .priority-badge.priority-low {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .priority-badge .material-icons {
+            font-size: 1rem;
+        }
+        
+        .recommendation-type {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .recommendation-type .material-icons {
+            font-size: 1rem;
+        }
+        
+        .recommendation-content h4 {
+            color: #1e293b;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .recommendation-member {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .recommendation-member .material-icons {
+            font-size: 1rem;
+            color: #3b82f6;
+        }
+        
+        .no-recommendations {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+            grid-column: 1 / -1;
+        }
+        
+        .no-recommendations .material-icons {
+            font-size: 4rem;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+        
+        .no-recommendations h4 {
+            color: #1e293b;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+        
+        /* Recommendation Modal Styling */
+        .recommendation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: modal-slide-in 0.3s ease-out;
+        }
+        
+        @keyframes modal-slide-in {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .modal-section {
+            margin-bottom: 25px;
+        }
+        
+        .modal-section h4 {
+            color: #1e293b;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-section h4 .material-icons {
+            color: #3b82f6;
+            font-size: 1.2rem;
+        }
+        
+        .modal-section p {
+            color: #64748b;
+            line-height: 1.6;
+            margin: 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        /* Footer Styling */
+        .footer-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .footer-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            min-width: 140px;
+            justify-content: center;
+        }
+        
+        .footer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .footer-btn:active {
+            transform: translateY(0);
+        }
+        
+        .footer-btn .material-icons {
+            font-size: 18px;
+        }
+        
+        .email-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .email-btn:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .download-btn:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+        
+        .print-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .print-btn:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        }
+        
+        .footer-info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            /* background: #f8fafc; */
+            border-radius: 12px;
+            border: 1px solid #e2e8f00e;
+        }
+        
+        .footer-brand {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin: 0 0 8px 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .footer-source {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+            font-style: italic;
+        }
+        
+        /* Print Styles for PDF Generation */
+        @media print {
+            .footer-actions,
+            .recommendations-section,
+            .modal-backdrop {
+                display: none !important;
+            }
+            
+            .report-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 10px !important;
+                background: white !important;
+            }
+            
+            .report-header {
+                background: #667eea !important;
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                color: white !important;
+            }
+            
+            .metric-card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                border: 1px solid #e2e8f0 !important;
+                background: white !important;
+            }
+            
+            .chart-section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin: 20px 0 !important;
+            }
+            
+            .chart-container {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin: 20px 0 !important;
+            }
+            
+            .executive-summary {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                background: #f1f5f9 !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+            
+            .recommendations-section {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+        }
+        
+        .executive-summary {
+            background: #f1f5f9;
+            border-left: 5px solid #3b82f6;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        .executive-summary h2 {
+            color: #1e40af;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .executive-summary h2 .material-icons {
+            font-size: 1.8rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .metric-icon {
+            margin-bottom: 15px;
+        }
+        
+        .metric-icon .material-icons {
+            font-size: 3rem;
+            color: #3b82f6;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .chart-section {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .chart-section h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .chart-section h3 .material-icons {
+            font-size: 1.5rem;
+            color: #3b82f6;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .chart-container canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+        
+        /* Ensure charts are visible in PDF */
+        .chart-container .chartjs-render-monitor {
+            position: relative !important;
+            width: 100% !important;
+            height: auto !important;
+        }
+        
+        .workload-distribution {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .workload-category {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .workload-category.light {
+            border-left: 5px solid #10b981;
+        }
+        
+        .workload-category.balanced {
+            border-left: 5px solid #f59e0b;
+        }
+        
+        .workload-category.high {
+            border-left: 5px solid #ef4444;
+        }
+        
+        .workload-category.overloaded {
+            border-left: 5px solid #dc2626;
+        }
+        
+        .category-count {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .category-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .assessment-content {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .assessment-content h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .assessment-text {
+            line-height: 1.8;
+            color: #374151;
+        }
+        
+        .assessment-date-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        
+        .assessment-section-header {
+            color: #1e40af;
+            font-size: 1.3rem;
+            margin: 25px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3b82f6;
+            font-weight: 600;
+        }
+        
+        .assessment-list-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .assessment-list-header {
+            color: #1e40af;
+            font-size: 1.1rem;
+            margin: 0 0 15px 0;
+            font-weight: 600;
+        }
+        
+        .assessment-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .assessment-list li {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            position: relative;
+            padding-left: 35px;
+        }
+        
+        .assessment-list li:before {
+            content: "•";
+            color: #3b82f6;
+            font-weight: bold;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 12px;
+            top: 8px;
+        }
+        
+        .assessment-pros-cons {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .assessment-pros-cons-header {
+            color: #059669;
+            font-size: 1.1rem;
+            margin: 0 0 15px 0;
+            font-weight: 600;
+        }
+        
+        .assessment-pros-cons-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .assessment-pros-cons-list li {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            position: relative;
+            padding-left: 35px;
+        }
+        
+        .assessment-pros-cons-list li:before {
+            content: "✓";
+            color: #059669;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: absolute;
+            left: 12px;
+            top: 8px;
+        }
+        
+        .highlight-number {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            margin: 0 2px;
+        }
+        
+        .highlight-category {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 0 2px;
+        }
+        
+        .assessment-paragraph {
+            margin: 16px 0;
+            padding: 0;
+            line-height: 1.7;
+            color: #374151;
+        }
+
+        .project-performance-summary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .project-performance-summary h4 {
+            color: #1e40af;
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .performance-metric {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .performance-metric .metric-label {
+            display: block;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .performance-metric .metric-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e40af;
+        }
+
+        .performance-metric .metric-value.on-track {
+            color: #059669;
+        }
+
+        .performance-metric .metric-value.delayed {
+            color: #dc2626;
+        }
+        
+        .report-footer {
+            background: #1e293b;
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .footer-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-meta span {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-meta .material-icons {
+            font-size: 1.1rem;
+        }
+        
+        .print-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .print-button .material-icons {
+            font-size: 1.2rem;
+        }
+        
+        .print-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        @media print {
+            .print-button {
+                display: none;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .report-container {
+                box-shadow: none;
+                padding: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .report-container {
+                padding: 15px;
+            }
+            
+            .report-header {
+                padding: 25px;
+            }
+            
+            .report-title {
+                font-size: 2rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <!-- Report Header -->
+        <div class="report-header">
+            <h1 class="report-title"><span class="material-icons">analytics</span> Team Assessment Report</h1>
+            <p class="report-subtitle">Comprehensive Analysis & Strategic Insights</p>
+            <div class="report-meta">
+                <span class="meta-item"><span class="material-icons">event</span> {{ assessment.generated_at.split('T')[0] if assessment.generated_at else assessment.cache_info.generated_date if assessment.cache_info else 'Details' }}</span>
+                <span class="meta-item"><span class="material-icons">group</span> {{ pulse_data.total_members if pulse_data.total_members else 'N/A' }} Members</span>
+                <span class="meta-item"><span class="material-icons">check_circle</span> {{ pulse_data.total_tasks if pulse_data.total_tasks else 'N/A' }} Tasks</span>
+                <span class="meta-item"><span class="material-icons">monitor_heart</span> {{ assessment.health_score if assessment.health_score else 'N/A' }} Health</span>
+            </div>
+            
+            <!-- Cache Info -->
+            {% if assessment.cache_info %}
+            <div class="cache-info">
+                <span class="cache-item"><span class="material-icons">folder</span> Source: {{ assessment.cache_info.source_file }}</span>
+                <span class="cache-item"><span class="material-icons">schedule</span> Generated: {{ assessment.cache_info.generated_date }}</span>
+                <span class="cache-item"><span class="material-icons">cached</span> Using cached data</span>
+            </div>
+            {% endif %}
+            
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="executive-summary">
+            <h2><span class="material-icons">summarize</span> Executive Summary</h2>
+            <p>This comprehensive team assessment provides critical insights into workload distribution, team health metrics, and strategic recommendations for optimizing team performance and resource allocation.</p>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon"><span class="material-icons">monitor_heart</span></div>
+                <div class="metric-value">{{ assessment.health_score if assessment.health_score else 'N/A' }}</div>
+                <div class="metric-label">Team Health Score</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon"><span class="material-icons">group</span></div>
+                <div class="metric-value">{{ pulse_data.total_members if pulse_data.total_members else 'N/A' }}</div>
+                <div class="metric-label">Active Team Members</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon"><span class="material-icons">check_circle</span></div>
+                <div class="metric-value">{{ pulse_data.total_tasks if pulse_data.total_tasks else 'N/A' }}</div>
+                <div class="metric-label">Total Active Tasks</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon"><span class="material-icons">analytics</span></div>
+                <div class="metric-value">{{ "%.1f"|format(pulse_data.average_workload_score) if pulse_data.average_workload_score else 'N/A' }}</div>
+                <div class="metric-label">Avg Workload Score</div>
+            </div>
+        </div>
+
+        <!-- Workload Distribution Chart -->
+        <div class="chart-section">
+            <h3><span class="material-icons">pie_chart</span> Workload Distribution Analysis</h3>
+            <div class="chart-container">
+                <canvas id="workloadChart"></canvas>
+            </div>
+            
+            <!-- Workload Categories -->
+            <div class="workload-distribution">
+                <div class="workload-category light">
+                    <div class="category-count">{{ pulse_data.workload_distribution.light if pulse_data.workload_distribution and pulse_data.workload_distribution.light else 0 }}</div>
+                    <div class="category-label">Light (0-49)</div>
+                </div>
+                <div class="workload-category balanced">
+                    <div class="category-count">{{ pulse_data.workload_distribution.balanced if pulse_data.workload_distribution and pulse_data.workload_distribution.balanced else 0 }}</div>
+                    <div class="category-label">Balanced (50-99)</div>
+                </div>
+                <div class="workload-category high">
+                    <div class="category-count">{{ pulse_data.workload_distribution.high if pulse_data.workload_distribution and pulse_data.workload_distribution.high else 0 }}</div>
+                    <div class="category-label">High (100-149)</div>
+                </div>
+                <div class="workload-category overloaded">
+                    <div class="category-count">{{ pulse_data.workload_distribution.overloaded if pulse_data.workload_distribution and pulse_data.workload_distribution.overloaded else 0 }}</div>
+                    <div class="category-label">Overloaded (150+)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Workload Chart -->
+        <div class="chart-section">
+            <h3><span class="material-icons">person</span> Individual Member Workload</h3>
+            <div class="chart-container">
+                <canvas id="memberChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Project Performance Chart -->
+        <div class="chart-section">
+            <h3><span class="material-icons">analytics</span> Project Weight vs. Development Duration</h3>
+            <div class="chart-container">
+                <canvas id="projectChart"></canvas>
+            </div>
+            
+            <!-- Project Performance Summary -->
+            <div class="project-performance-summary">
+                <h4>Project Performance Analysis</h4>
+                <div class="performance-metrics">
+                    <div class="performance-metric">
+                        <span class="metric-label">On Track:</span>
+                        <span class="metric-value on-track">{{ pulse_data.project_performance.projects_on_track if pulse_data.project_performance else 0 }}</span>
+                    </div>
+                    <div class="performance-metric">
+                        <span class="metric-label">Delayed:</span>
+                        <span class="metric-value delayed">{{ pulse_data.project_performance.projects_delayed if pulse_data.project_performance else 0 }}</span>
+                    </div>
+                    <div class="performance-metric">
+                        <span class="metric-label">Avg Delay:</span>
+                        <span class="metric-value">{{ "%.1f"|format(pulse_data.project_performance.avg_delay_days) if pulse_data.project_performance else 0 }} days</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategic Recommendations Section -->
+        <div class="recommendations-section">
+            <h3><span class="material-icons">lightbulb</span> Strategic Recommendations</h3>
+            <div class="recommendations-grid">
+                {% if pulse_data.recommendations and pulse_data.recommendations|length > 0 %}
+                    {% for recommendation in pulse_data.recommendations %}
+                        <div class="recommendation-card" onclick="showRecommendationDetail('{{ recommendation.type|replace("'", "\\'")|replace('"', '\\"') }}', '{{ recommendation.priority|replace("'", "\\'")|replace('"', '\\"') }}', '{{ recommendation.member|replace("'", "\\'")|replace('"', '\\"') if recommendation.member else 'Team' }}', '{{ recommendation.message|replace("'", "\\'")|replace('"', '\\"') }}', '{{ recommendation.action|replace("'", "\\'")|replace('"', '\\"') }}')">
+                            <div class="recommendation-header">
+                                <div class="priority-badge priority-{{ recommendation.priority }}">
+                                    <span class="material-icons">
+                                        {% if recommendation.priority == 'high' %}priority_high
+                                        {% elif recommendation.priority == 'medium' %}schedule
+                                        {% else %}low_priority{% endif %}
+                                    </span>
+                                    {{ recommendation.priority|title }}
+                                </div>
+                                <div class="recommendation-type">
+                                    <span class="material-icons">
+                                        {% if recommendation.type == 'workload_warning' %}warning
+                                        {% elif recommendation.type == 'time_overrun' %}schedule
+                                        {% elif recommendation.type == 'urgent_tasks' %}priority_high
+                                        {% elif recommendation.type == 'workload_imbalance' %}balance
+                                        {% else %}info{% endif %}
+                                    </span>
+                                    {{ recommendation.type|replace('_', ' ')|title }}
+                                </div>
+                            </div>
+                            <div class="recommendation-content">
+                                <h4>{{ recommendation.message[:80] }}{% if recommendation.message|length > 80 %}...{% endif %}</h4>
+                                <p class="recommendation-member">
+                                    <span class="material-icons">person</span>
+                                    {{ recommendation.member if recommendation.member else 'Team' }}
+                                </p>
+                            </div>
+                            <div class="recommendation-glow"></div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-recommendations">
+                        <span class="material-icons">check_circle</span>
+                        <h4>All Systems Optimal</h4>
+                        <p>No immediate recommendations at this time. Team performance is within expected parameters.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recommendation Detail Modal -->
+        <div id="recommendationModal" class="recommendation-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">Recommendation Details</h3>
+                    <button class="modal-close" onclick="closeRecommendationModal()">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-section">
+                        <h4><span class="material-icons">priority_high</span> Priority</h4>
+                        <p id="modalPriority"></p>
+                    </div>
+                    <div class="modal-section">
+                        <h4><span class="material-icons">person</span> Affected Member</h4>
+                        <p id="modalMember"></p>
+                    </div>
+                    <div class="modal-section">
+                        <h4><span class="material-icons">message</span> Issue Description</h4>
+                        <p id="modalMessage"></p>
+                    </div>
+                    <div class="modal-section">
+                        <h4><span class="material-icons">lightbulb</span> Recommended Action</h4>
+                        <p id="modalAction"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Content -->
+                        <div class="assessment-content">
+                            <h3><span class="material-icons">search</span> Critical Analysis & Insights</h3>
+                            <div class="assessment-text">
+                                {% if assessment.assessment %}
+                                    {% set paragraphs = assessment.assessment.split('\n\n') %}
+                                    {% for paragraph in paragraphs %}
+                                        {% set trimmed = paragraph.strip() %}
+                                        {% if trimmed %}
+                                            {% if trimmed.startswith('[') and ']' in trimmed %}
+                                                <div class="assessment-date-header">{{ trimmed }}</div>
+                                            {% elif 'Analysis:' in trimmed or 'Assessment:' in trimmed %}
+                                                <h3 class="assessment-section-header">{{ trimmed }}</h3>
+                                            {% elif 'Key issues:' in trimmed or 'Better Metrics Would Show:' in trimmed %}
+                                                {% set parts = trimmed.split(':') %}
+                                                {% if parts|length == 2 %}
+                                                    <div class="assessment-list-section">
+                                                        <h4 class="assessment-list-header">{{ parts[0] }}:</h4>
+                                                        <ul class="assessment-list">
+                                                            {% for item in parts[1].split(',') %}
+                                                                {% if item.strip() %}
+                                                                    <li>{{ item.strip() }}</li>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                {% endif %}
+                                            {% elif 'What it captures well:' in trimmed or 'What it misses:' in trimmed %}
+                                                {% set parts = trimmed.split(':') %}
+                                                {% if parts|length == 2 %}
+                                                    <div class="assessment-pros-cons">
+                                                        <h4 class="assessment-pros-cons-header">{{ parts[0] }}:</h4>
+                                                        <ul class="assessment-pros-cons-list">
+                                                            {% for item in parts[1].split(',') %}
+                                                                {% if item.strip() %}
+                                                                    <li>{{ item.strip() }}</li>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                {% endif %}
+                                            {% elif 'score' in trimmed.lower() or 'Score' in trimmed %}
+                                                <div class="assessment-score-content">{{ trimmed | replace('0', '<span class="highlight-number">0</span>') | replace('1', '<span class="highlight-number">1</span>') | replace('2', '<span class="highlight-number">2</span>') | replace('3', '<span class="highlight-number">3</span>') | replace('4', '<span class="highlight-number">4</span>') | replace('5', '<span class="highlight-number">5</span>') | replace('6', '<span class="highlight-number">6</span>') | replace('7', '<span class="highlight-number">7</span>') | replace('8', '<span class="highlight-number">8</span>') | replace('9', '<span class="highlight-number">9</span>') | safe }}</div>
+                                            {% elif 'points' in trimmed.lower() or 'Points' in trimmed %}
+                                                <div class="assessment-points-content">{{ trimmed | replace('0', '<span class="highlight-number">0</span>') | replace('1', '<span class="highlight-number">1</span>') | replace('2', '<span class="highlight-number">2</span>') | replace('3', '<span class="highlight-number">3</span>') | replace('4', '<span class="highlight-number">4</span>') | replace('5', '<span class="highlight-number">5</span>') | replace('6', '<span class="highlight-number">6</span>') | replace('7', '<span class="highlight-number">7</span>') | replace('8', '<span class="highlight-number">8</span>') | replace('9', '<span class="highlight-number">9</span>') | safe }}</div>
+                                            {% elif 'category' in trimmed.lower() or 'Category' in trimmed %}
+                                                <div class="assessment-category-content">{{ trimmed | replace('Light', '<span class="highlight-category">Light</span>') | replace('Balanced', '<span class="highlight-category">Balanced</span>') | replace('High', '<span class="highlight-category">High</span>') | replace('Overloaded', '<span class="highlight-category">Overloaded</span>') | safe }}</div>
+                                            {% else %}
+                                                <p class="assessment-paragraph">{{ trimmed }}</p>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <p>No assessment data available.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                                <!-- Report Footer -->
+                        <div class="report-footer">
+                            <div class="footer-meta">
+                                <!-- <span><span class="material-icons">smart_toy</span> Analysis Model: {{ assessment.model_used if assessment.model_used else 'Local Analysis' }}</span> -->
+                                <span><span class="material-icons">smart_toy</span> Analysis Model: Agimat AI 1.0</span>
+                                <span><span class="material-icons">satellite</span> Data Source: {{ assessment.data_source if assessment.data_source else 'ClickUp API' }}</span>
+                                <span><span class="material-icons">schedule</span> Generated: {{ assessment.generated_at if assessment.generated_at else 'Details' }}</span>
+                            </div>
+                            
+                            <!-- Action Buttons - Centered -->
+                            <div class="footer-actions">
+                                <button class="footer-btn email-btn" onclick="emailReport()">
+                                    <span class="material-icons">email</span> Email Report
+                                </button>
+                                <button class="footer-btn download-btn" onclick="dataBasedPDF()">
+                                    <span class="material-icons">download</span> Download
+                                </button>
+                            </div>
+                            
+                            <!-- Footer Information -->
+                            <div class="footer-info">
+                                <p class="footer-brand">SourceSelect.ca team assessment - {{ assessment.generated_at.split('T')[0] if assessment.generated_at else assessment.cache_info.generated_date if assessment.cache_info else 'Details' }}</p>
+                                <p class="footer-source">Data is from ClickUp, Analyzed by Agimat AI by the Swordfish.</p>
+                            </div>
+                        </div>
+    </div>
+
+    <script>
+        // Initialize charts when page loads
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+            // Workload Distribution Chart
+            const workloadCtx = document.getElementById('workloadChart').getContext('2d');
+            const workloadData = {
+                light: {{ pulse_data.workload_distribution.light if pulse_data.workload_distribution and pulse_data.workload_distribution.light else 0 }},
+                balanced: {{ pulse_data.workload_distribution.balanced if pulse_data.workload_distribution and pulse_data.workload_distribution.balanced else 0 }},
+                high: {{ pulse_data.workload_distribution.high if pulse_data.workload_distribution and pulse_data.workload_distribution.high else 0 }},
+                overloaded: {{ pulse_data.workload_distribution.overloaded if pulse_data.workload_distribution and pulse_data.workload_distribution.overloaded else 0 }}
+            } || {};
+            
+            // Check if we have valid workload data
+            if (workloadData && (workloadData.light > 0 || workloadData.balanced > 0 || workloadData.high > 0 || workloadData.overloaded > 0)) {
+                new Chart(workloadCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Light (0-49)', 'Balanced (50-99)', 'High (100-149)', 'Overloaded (150+)'],
+                        datasets: [{
+                            data: [
+                                workloadData.light,
+                                workloadData.balanced,
+                                workloadData.high,
+                                workloadData.overloaded
+                            ],
+                            backgroundColor: [
+                                '#10b981',
+                                '#f59e0b',
+                                '#ef4444',
+                                '#dc2626'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // No workload data available, show message
+                workloadCtx.canvas.parentElement.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748b;"><span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">info</span><p>No workload distribution data available</p><p>Complete a pulse scan to see workload data</p></div>';
+            }
+
+            // Member Workload Chart
+            const memberCtx = document.getElementById('memberChart').getContext('2d');
+            const memberData = {{ pulse_data.member_workloads | tojson if pulse_data.member_workloads else '[]' }} || [];
+            
+            // Ensure memberData is an array and has the expected structure
+            if (memberData && Array.isArray(memberData) && memberData.length > 0) {
+                // Check if the data has the expected structure
+                const hasValidStructure = memberData.every(m => m && typeof m === 'object' && 'member_name' in m && 'workload_score' in m);
+                
+                if (hasValidStructure) {
+                    new Chart(memberCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: memberData.map(m => m.member_name || 'Unknown'),
+                            datasets: [{
+                                label: 'Workload Score',
+                                data: memberData.map(m => m.workload_score || 0),
+                                backgroundColor: memberData.map(m => {
+                                    const score = m.workload_score || 0;
+                                    if (score >= 150) return '#dc2626';
+                                    if (score >= 100) return '#ef4444';
+                                    if (score >= 50) return '#f59e0b';
+                                    return '#10b981';
+                                }),
+                                borderColor: '#ffffff',
+                                borderWidth: 2,
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: '#e2e8f0'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // Data structure is invalid, show error message
+                    memberCtx.canvas.parentElement.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748b;"><span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">error_outline</span><p>Member data structure is invalid</p><p>Expected: array of objects with member_name and workload_score</p></div>';
+                }
+            } else {
+                // No data available, show message
+                memberCtx.canvas.parentElement.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748b;"><span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">info</span><p>No member workload data available</p><p>Complete a pulse scan to see member data</p></div>';
+            }
+
+            // Project Performance Chart
+            const projectCtx = document.getElementById('projectChart').getContext('2d');
+            const projectsData = {{ pulse_data.project_analytics | tojson if pulse_data.project_analytics else '{}' }} || {};
+            
+            // Ensure projectsData is valid and has data
+            if (projectsData && typeof projectsData === 'object' && Object.keys(projectsData).length > 0) {
+                const projectNames = [];
+                const projectWeights = [];
+                const developmentDays = [];
+                const expectedDays = [];
+                const colors = [];
+                
+                Object.values(projectsData).forEach(project => {
+                    if (project && project.name) {
+                        projectNames.push(project.name);
+                        projectWeights.push(project.weight || 0);
+                        
+                        // Calculate development days
+                        let days = 0;
+                        if (project.date_created) {
+                            try {
+                                const created = new Date(project.date_created);
+                                days = Math.floor((new Date() - created) / (1000 * 60 * 60 * 24));
+                            } catch (e) {
+                                days = 0;
+                            }
+                        }
+                        developmentDays.push(days);
+                        
+                        // Estimate expected days based on weight
+                        let expected = 0;
+                        if (project.weight <= 10) expected = 3;
+                        else if (project.weight <= 25) expected = 7;
+                        else if (project.weight <= 50) expected = 14;
+                        else if (project.weight <= 100) expected = 30;
+                        else expected = 45;
+                        expectedDays.push(expected);
+                        
+                        // Color based on performance
+                        if (days > expected * 1.5) colors.push('#dc2626'); // Red for severely delayed
+                        else if (days > expected) colors.push('#f59e0b'); // Orange for delayed
+                        else colors.push('#10b981'); // Green for on track
+                    }
+                });
+                
+                new Chart(projectCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Project Weight vs Development Days',
+                            data: projectNames.map((name, i) => ({
+                                x: projectWeights[i],
+                                y: developmentDays[i],
+                                project: name,
+                                expected: expectedDays[i]
+                            })),
+                            backgroundColor: colors,
+                            borderColor: '#ffffff',
+                            borderWidth: 2,
+                            pointRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const data = context.raw;
+                                        return [
+                                            `Project: ${data.project}`,
+                                            `Weight: ${data.x}`,
+                                            `Development: ${data.y} days`,
+                                            `Expected: ${data.expected} days`,
+                                            data.y > data.expected ? '<span class="material-icons">warning</span> DELAYED' : '<span class="material-icons">check_circle</span> On Track'
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Project Weight'
+                                },
+                                grid: {
+                                    color: '#e2e8f0'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Development Days'
+                                },
+                                grid: {
+                                    color: '#e2e8f0'
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // No project data available, show message
+                projectCtx.canvas.parentElement.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748b;"><span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">info</span><p>No project data available</p><p>Complete a pulse scan to see project analytics</p></div>';
+            }
+            } catch (error) {
+                console.error('Error initializing charts:', error);
+                // Show error message on the page
+                const errorDiv = document.createElement('div');
+                errorDiv.innerHTML = '<div style="text-align: center; padding: 40px; color: #dc2626;"><span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">error_outline</span><p>Error loading charts</p><p>Check console for details</p></div>';
+                document.body.appendChild(errorDiv);
+            }
+        });
+        
+        // Recommendation Modal Functions
+        function showRecommendationDetail(type, priority, member, message, action) {
+            // Set modal content
+            document.getElementById('modalTitle').textContent = type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            document.getElementById('modalPriority').textContent = priority.charAt(0).toUpperCase() + priority.slice(1);
+            document.getElementById('modalMember').textContent = member;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('modalAction').textContent = action;
+            
+            // Show modal with animation
+            const modal = document.getElementById('recommendationModal');
+            modal.style.display = 'block';
+            modal.style.opacity = '0';
+            
+            setTimeout(() => {
+                modal.style.opacity = '1';
+            }, 10);
+            
+            // Add escape key listener
+            document.addEventListener('keydown', handleEscapeKey);
+        }
+        
+        function closeRecommendationModal() {
+            const modal = document.getElementById('recommendationModal');
+            modal.style.opacity = '0';
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+            
+            // Remove escape key listener
+            document.removeEventListener('keydown', handleEscapeKey);
+        }
+        
+        function handleEscapeKey(e) {
+            if (e.key === 'Escape') {
+                closeRecommendationModal();
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('recommendationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRecommendationModal();
+            }
+        });
+        
+        // Email Report Function
+        function emailReport() {
+            const reportDate = '{{ assessment.generated_at.split('T')[0] if assessment.generated_at else assessment.cache_info.generated_date if assessment.cache_info else 'Details' }}';
+            const subject = `Team Assessment Report - ${reportDate}`;
+            const body = `Please find attached the comprehensive team assessment report generated on ${reportDate}.\n\nThis report contains:\n- Team health metrics\n- Workload distribution analysis\n- Individual member insights\n- Project performance data\n- Strategic recommendations\n\nBest regards,\nTeam Analytics System`;
+            
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.open(mailtoLink);
+        }
+        
+        // Download PDF Function
+        function downloadPDF() {
+            // Show loading state
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<span class="material-icons">sync</span> Generating PDF...';
+            downloadBtn.disabled = true;
+            
+            // Ensure all charts are fully rendered before generating PDF
+            ensureChartsRendered().then(() => {
+                generatePDFWithData();
+            }).catch(() => {
+                // If chart rendering fails, still try to generate PDF
+                console.warn('Chart rendering failed, proceeding with PDF generation...');
+                generatePDFWithData();
+            });
+            
+            function generatePDFWithData() {
+                // Create a clean version for PDF generation
+                const originalElement = document.querySelector('.report-container');
+                const pdfElement = originalElement.cloneNode(true);
+                
+                // Remove elements that shouldn't be in PDF
+                const elementsToRemove = pdfElement.querySelectorAll('.footer-actions, .recommendations-section, .modal-backdrop');
+                elementsToRemove.forEach(el => el.remove());
+                
+                // Add PDF-specific styles
+                pdfElement.style.background = 'white';
+                pdfElement.style.color = 'black';
+                pdfElement.style.fontFamily = 'Arial, sans-serif';
+                pdfElement.style.position = 'relative';
+                pdfElement.style.left = '0';
+                pdfElement.style.top = '0';
+                pdfElement.style.width = '1200px';
+                pdfElement.style.zIndex = '1';
+                pdfElement.style.visibility = 'visible';
+                pdfElement.style.display = 'block';
+                
+                // Ensure all text content is visible
+                pdfElement.style.fontSize = '12px';
+                pdfElement.style.lineHeight = '1.4';
+                
+                // Make sure charts are visible and properly sized
+                const chartContainers = pdfElement.querySelectorAll('.chart-container');
+                chartContainers.forEach(container => {
+                    container.style.height = 'auto';
+                    container.style.minHeight = '300px';
+                    container.style.overflow = 'visible';
+                    container.style.display = 'block';
+                    container.style.visibility = 'visible';
+                });
+                
+                // Ensure all text elements are visible
+                const textElements = pdfElement.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, div');
+                textElements.forEach(el => {
+                    el.style.color = 'black';
+                    el.style.backgroundColor = 'transparent';
+                    el.style.visibility = 'visible';
+                    el.style.display = 'block';
+                });
+                
+                // Temporarily append to body for PDF generation
+                document.body.appendChild(pdfElement);
+                pdfElement.style.position = 'absolute';
+                pdfElement.style.left = '-9999px';
+                pdfElement.style.top = '0';
+                pdfElement.style.width = '1200px';
+                pdfElement.style.zIndex = '-1';
+                
+                // Use html2pdf library to generate PDF with better options
+                const opt = {
+                    margin: [15, 15, 15, 15],
+                    filename: `team-assessment-report-${new Date().toISOString().split('T')[0]}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 2, 
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        width: 1200,
+                        height: undefined,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: 1200,
+                        windowHeight: document.documentElement.scrollHeight,
+                        logging: true,
+                        removeContainer: false
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+                
+                // Load html2pdf library dynamically with a more recent version
+                if (typeof html2pdf === 'undefined' || !html2pdf.version) {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                    script.onload = function() {
+                        console.log('html2pdf loaded successfully, version:', html2pdf.version);
+                        generatePDF(pdfElement, opt);
+                    };
+                    script.onerror = function() {
+                        console.error('Failed to load html2pdf, trying alternative method...');
+                        downloadPDFAlternative();
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    console.log('Using existing html2pdf, version:', html2pdf.version);
+                    generatePDF(pdfElement, opt);
+                }
+                
+                function generatePDF(element, opt) {
+                    console.log('Starting PDF generation...');
+                    console.log('Element to convert:', element);
+                    console.log('html2pdf version:', html2pdf.version);
+                    console.log('html2pdf methods:', Object.getOwnPropertyNames(html2pdf));
+                    
+                    try {
+                        // Try the standard method first
+                        if (html2pdf && typeof html2pdf === 'function') {
+                            html2pdf().set(opt).from(element).save().then(() => {
+                                console.log('PDF generated successfully!');
+                                // Clean up
+                                document.body.removeChild(element);
+                                downloadBtn.innerHTML = originalText;
+                                downloadBtn.disabled = false;
+                            }).catch(err => {
+                                console.error('Standard PDF generation failed:', err);
+                                // Try alternative method
+                                console.log('Trying alternative PDF method...');
+                                downloadPDFAlternative();
+                            });
+                        } else {
+                            console.error('html2pdf is not a function, trying alternative method...');
+                            downloadPDFAlternative();
+                        }
+                    } catch (error) {
+                        console.error('PDF generation error:', error);
+                        // Clean up on error
+                        if (document.body.contains(element)) {
+                            document.body.removeChild(element);
+                        }
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                        alert('PDF generation failed. Trying alternative method...');
+                        downloadPDFAlternative();
+                    }
+                }
+            }
+        }
+        
+        // Function to ensure all charts are properly rendered
+        function ensureChartsRendered() {
+            return new Promise((resolve, reject) => {
+                const maxAttempts = 10;
+                let attempts = 0;
+                
+                function checkCharts() {
+                    attempts++;
+                    console.log(`Checking charts (attempt ${attempts}/${maxAttempts})...`);
+                    
+                    // Check if all chart canvases have content
+                    const charts = document.querySelectorAll('canvas');
+                    let allChartsReady = true;
+                    
+                    charts.forEach((canvas, index) => {
+                        const ctx = canvas.getContext('2d');
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const hasContent = imageData.data.some(pixel => pixel !== 0);
+                        
+                        console.log(`Chart ${index + 1}:`, {
+                            width: canvas.width,
+                            height: canvas.height,
+                            hasContent: hasContent
+                        });
+                        
+                        if (!hasContent) {
+                            allChartsReady = false;
+                        }
+                    });
+                    
+                    if (allChartsReady || attempts >= maxAttempts) {
+                        if (allChartsReady) {
+                            console.log('All charts are ready!');
+                            resolve();
+                        } else {
+                            console.warn('Charts not ready after maximum attempts, proceeding anyway...');
+                            resolve();
+                        }
+                    } else {
+                        // Wait a bit more and try again
+                        setTimeout(checkCharts, 500);
+                    }
+                }
+                
+                // Start checking
+                checkCharts();
+            });
+        }
+        
+        // Alternative PDF generation method using print-to-PDF
+        function downloadPDFAlternative() {
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<span class="material-icons">sync</span> Using Alternative Method...';
+            downloadBtn.disabled = true;
+            
+            try {
+                console.log('Starting alternative PDF method...');
+                
+                // Create a new window for printing
+                const printWindow = window.open('', '_blank', 'width=1200,height=800');
+                const originalElement = document.querySelector('.report-container');
+                
+                // Clone the content
+                const printContent = originalElement.cloneNode(true);
+                
+                // Remove unwanted elements
+                const elementsToRemove = printContent.querySelectorAll('.footer-actions, .recommendations-section, .modal-backdrop');
+                elementsToRemove.forEach(el => el.remove());
+                
+                // Add print-specific styles
+                printContent.style.background = 'white';
+                printContent.style.color = 'black';
+                printContent.style.fontFamily = 'Arial, sans-serif';
+                printContent.style.fontSize = '12px';
+                printContent.style.lineHeight = '1.4';
+                printContent.style.width = '100%';
+                printContent.style.maxWidth = 'none';
+                
+                // Ensure charts are visible
+                const chartContainers = printContent.querySelectorAll('.chart-container');
+                chartContainers.forEach(container => {
+                    container.style.height = 'auto';
+                    container.style.minHeight = '300px';
+                    container.style.overflow = 'visible';
+                    container.style.display = 'block';
+                    container.style.visibility = 'visible';
+                });
+                
+                // Write the content to the new window with enhanced styles
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Team Assessment Report</title>
+                        <meta charset="UTF-8">
+                        <style>
+                            * {
+                                box-sizing: border-box;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            
+                            body { 
+                                font-family: Arial, sans-serif; 
+                                font-size: 12px; 
+                                line-height: 1.4; 
+                                color: black; 
+                                background: white; 
+                                margin: 20px;
+                                width: 100%;
+                                max-width: none;
+                            }
+                            
+                            .report-container {
+                                width: 100%;
+                                max-width: none;
+                                background: white;
+                                color: black;
+                            }
+                            
+                            .chart-container { 
+                                height: auto !important; 
+                                min-height: 300px; 
+                                overflow: visible; 
+                                page-break-inside: avoid;
+                                display: block !important;
+                                visibility: visible !important;
+                            }
+                            
+                            .metric-card { 
+                                page-break-inside: avoid; 
+                                margin-bottom: 20px;
+                                border: 1px solid #ccc;
+                                padding: 15px;
+                            }
+                            
+                            .executive-summary { 
+                                page-break-inside: avoid; 
+                                margin-bottom: 20px;
+                                background: #f8f9fa;
+                                border: 1px solid #dee2e6;
+                                padding: 20px;
+                            }
+                            
+                            .report-header {
+                                background: #667eea !important;
+                                color: white !important;
+                                padding: 30px;
+                                margin-bottom: 20px;
+                                border-radius: 8px;
+                            }
+                            
+                            .report-title {
+                                color: white !important;
+                                font-size: 24px;
+                                font-weight: bold;
+                            }
+                            
+                            .report-subtitle {
+                                color: white !important;
+                                opacity: 0.9;
+                            }
+                            
+                            @media print {
+                                body { 
+                                    margin: 0; 
+                                    -webkit-print-color-adjust: exact;
+                                    color-adjust: exact;
+                                }
+                                .chart-container { 
+                                    height: auto !important; 
+                                    page-break-inside: avoid;
+                                }
+                                .metric-card, .executive-summary {
+                                    page-break-inside: avoid;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent.outerHTML}
+                    </body>
+                    </html>
+                `);
+                
+                printWindow.document.close();
+                
+                // Wait for content to load then print
+                printWindow.onload = function() {
+                    console.log('Alternative PDF window loaded, waiting to print...');
+                    setTimeout(() => {
+                        try {
+                            printWindow.print();
+                            setTimeout(() => {
+                                printWindow.close();
+                                downloadBtn.innerHTML = originalText;
+                                downloadBtn.disabled = false;
+                                console.log('Alternative PDF method completed successfully');
+                            }, 1000);
+                        } catch (printError) {
+                            console.error('Print failed:', printError);
+                            printWindow.close();
+                            downloadBtn.innerHTML = originalText;
+                            downloadBtn.disabled = false;
+                            alert('Print failed. Please try manually printing the page.');
+                        }
+                    }, 1500);
+                };
+                
+            } catch (error) {
+                console.error('Alternative PDF method failed:', error);
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+                alert('Alternative PDF method failed. Please try the print option instead.');
+            }
+        }
+        
+        // Direct print function that optimizes the page for printing
+        function printDirect() {
+            console.log('Starting direct print...');
+            
+            // Create a print-optimized version
+            const originalElement = document.querySelector('.report-container');
+            const printElement = originalElement.cloneNode(true);
+            
+            // Remove unwanted elements
+            const elementsToRemove = printElement.querySelectorAll('.footer-actions, .recommendations-section, .modal-backdrop');
+            elementsToRemove.forEach(el => el.remove());
+            
+            // Add print-specific styles
+            printElement.style.background = 'white';
+            printElement.style.color = 'black';
+            printElement.style.fontFamily = 'Arial, sans-serif';
+            printElement.style.fontSize = '12px';
+            printElement.style.lineHeight = '1.4';
+            
+            // Ensure charts are visible
+            const chartContainers = printElement.querySelectorAll('.chart-container');
+            chartContainers.forEach(container => {
+                container.style.height = 'auto';
+                container.style.minHeight = '300px';
+                container.style.overflow = 'visible';
+                container.style.display = 'block';
+                container.style.visibility = 'visible';
+            });
+            
+            // Temporarily replace the content
+            const originalParent = originalElement.parentNode;
+            originalParent.insertBefore(printElement, originalElement);
+            originalElement.style.display = 'none';
+            
+            // Print
+            window.print();
+            
+            // Restore original content
+            setTimeout(() => {
+                originalParent.removeChild(printElement);
+                originalElement.style.display = 'block';
+            }, 1000);
+        }
+        
+        // Working PDF function based on the version that was working 4 hours ago
+        function downloadPDFWorking() {
+            console.log('Using working PDF method...');
+            
+            // Show loading state
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<span class="material-icons">sync</span> Generating PDF...';
+            downloadBtn.disabled = true;
+            
+            // Simple timeout approach that was working
+            setTimeout(() => {
+                generatePDFWorking();
+            }, 1000);
+            
+            function generatePDFWorking() {
+                console.log('Starting working PDF generation...');
+                
+                // Create a clean version for PDF generation
+                const originalElement = document.querySelector('.report-container');
+                const pdfElement = originalElement.cloneNode(true);
+                
+                // Remove elements that shouldn't be in PDF
+                const elementsToRemove = pdfElement.querySelectorAll('.footer-actions, .recommendations-section, .modal-backdrop');
+                elementsToRemove.forEach(el => el.remove());
+                
+                // Add PDF-specific styles (simplified)
+                pdfElement.style.background = 'white';
+                pdfElement.style.color = 'black';
+                pdfElement.style.fontFamily = 'Arial, sans-serif';
+                pdfElement.style.fontSize = '12px';
+                pdfElement.style.lineHeight = '1.4';
+                
+                // Make sure charts are visible (simplified)
+                const chartContainers = pdfElement.querySelectorAll('.chart-container');
+                chartContainers.forEach(container => {
+                    container.style.height = 'auto';
+                    container.style.minHeight = '300px';
+                    container.style.overflow = 'visible';
+                });
+                
+                // Temporarily append to body for PDF generation
+                document.body.appendChild(pdfElement);
+                pdfElement.style.position = 'absolute';
+                pdfElement.style.left = '-9999px';
+                pdfElement.style.top = '0';
+                pdfElement.style.width = '1200px';
+                pdfElement.style.zIndex = '-1';
+                
+                // Simple options that were working
+                const opt = {
+                    margin: [20, 20, 20, 20],
+                    filename: `team-assessment-report-${new Date().toISOString().split('T')[0]}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 2, 
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        width: 1200,
+                        height: undefined,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: 1200,
+                        windowHeight: document.documentElement.scrollHeight
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+                
+                // Simple library loading that was working
+                if (typeof html2pdf === 'undefined') {
+                    console.log('Loading html2pdf library...');
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                    script.onload = function() {
+                        console.log('html2pdf loaded, generating PDF...');
+                        generatePDFSimple(pdfElement, opt);
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    console.log('html2pdf already loaded, generating PDF...');
+                    generatePDFSimple(pdfElement, opt);
+                }
+                
+                function generatePDFSimple(element, opt) {
+                    console.log('Generating PDF with simple method...');
+                    
+                    try {
+                        html2pdf().set(opt).from(element).save().then(() => {
+                            console.log('PDF generated successfully with working method!');
+                            // Clean up
+                            document.body.removeChild(element);
+                            downloadBtn.innerHTML = originalText;
+                            downloadBtn.disabled = false;
+                        }).catch(err => {
+                            console.error('Working PDF method failed:', err);
+                            // Clean up on error
+                            if (document.body.contains(element)) {
+                                document.body.removeChild(element);
+                            }
+                            downloadBtn.innerHTML = originalText;
+                            downloadBtn.disabled = false;
+                            alert('Working PDF method failed: ' + err.message);
+                        });
+                    } catch (error) {
+                        console.error('Working PDF method error:', error);
+                        // Clean up on error
+                        if (document.body.contains(element)) {
+                            document.body.removeChild(element);
+                        }
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                        alert('Working PDF method error: ' + error.message);
+                    }
+                }
+            }
+        }
+        
+        // Fresh PDF function that clears html2pdf and reloads it
+        function downloadPDFFresh() {
+            console.log('Using fresh PDF method...');
+            
+            // Show loading state
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<span class="material-icons">sync</span> Loading Fresh...';
+            downloadBtn.disabled = true;
+            
+            // Clear any existing html2pdf
+            if (window.html2pdf) {
+                console.log('Clearing existing html2pdf...');
+                delete window.html2pdf;
+            }
+            
+            // Remove any existing html2pdf scripts
+            const existingScripts = document.querySelectorAll('script[src*="html2pdf"]');
+            existingScripts.forEach(script => {
+                console.log('Removing existing html2pdf script:', script.src);
+                script.remove();
+            });
+            
+            // Load fresh html2pdf library
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = function() {
+                console.log('Fresh html2pdf loaded, version:', html2pdf.version);
+                downloadBtn.innerHTML = '<span class="material-icons">sync</span> Generating PDF...';
+                
+                // Now generate PDF with fresh library
+                setTimeout(() => {
+                    generatePDFFresh();
+                }, 500);
+            };
+            script.onerror = function() {
+                console.error('Failed to load fresh html2pdf');
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+                alert('Failed to load fresh html2pdf library');
+            };
+            document.head.appendChild(script);
+            
+            function generatePDFFresh() {
+                console.log('Starting fresh PDF generation...');
+                
+                // Create a clean version for PDF generation
+                const originalElement = document.querySelector('.report-container');
+                const pdfElement = originalElement.cloneNode(true);
+                
+                // Remove elements that shouldn't be in PDF
+                const elementsToRemove = pdfElement.querySelectorAll('.footer-actions, .recommendations-section, .modal-backdrop');
+                elementsToRemove.forEach(el => el.remove());
+                
+                // Add PDF-specific styles
+                pdfElement.style.background = 'white';
+                pdfElement.style.color = 'black';
+                pdfElement.style.fontFamily = 'Arial, sans-serif';
+                pdfElement.style.fontSize = '12px';
+                pdfElement.style.lineHeight = '1.4';
+                
+                // Make sure charts are visible
+                const chartContainers = pdfElement.querySelectorAll('.chart-container');
+                chartContainers.forEach(container => {
+                    container.style.height = 'auto';
+                    container.style.minHeight = '300px';
+                    container.style.overflow = 'visible';
+                });
+                
+                // Temporarily append to body for PDF generation
+                document.body.appendChild(pdfElement);
+                pdfElement.style.position = 'absolute';
+                pdfElement.style.left = '-9999px';
+                pdfElement.style.top = '0';
+                pdfElement.style.width = '1200px';
+                pdfElement.style.zIndex = '-1';
+                
+                // Simple options
+                const opt = {
+                    margin: [20, 20, 20, 20],
+                    filename: `team-assessment-report-${new Date().toISOString().split('T')[0]}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 2, 
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        width: 1200,
+                        height: undefined,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: 1200,
+                        windowHeight: document.documentElement.scrollHeight
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+                
+                try {
+                    console.log('Generating PDF with fresh library...');
+                    html2pdf().set(opt).from(pdfElement).save().then(() => {
+                        console.log('PDF generated successfully with fresh method!');
+                        // Clean up
+                        document.body.removeChild(pdfElement);
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                    }).catch(err => {
+                        console.error('Fresh PDF method failed:', err);
+                        // Clean up on error
+                        if (document.body.contains(pdfElement)) {
+                            document.body.removeChild(pdfElement);
+                        }
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                        alert('Fresh PDF method failed: ' + err.message);
+                    });
+                } catch (error) {
+                    console.error('Fresh PDF method error:', error);
+                    // Clean up on error
+                    if (document.body.contains(pdfElement)) {
+                        document.body.removeChild(pdfElement);
+                    }
+                    downloadBtn.innerHTML = originalText;
+                    downloadBtn.disabled = false;
+                    alert('Fresh PDF method error: ' + error.message);
+                }
+            }
+        }
+        
+        // Print to PDF via Browser (Most Reliable Method)
+        function printToPDF() {
+            console.log('Starting Print to PDF...');
+            
+            // Show loading state
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<span class="material-icons">sync</span> Preparing for PDF...';
+            downloadBtn.disabled = true;
+            
+            // Wait for charts to be fully rendered and force a redraw
+            setTimeout(() => {
+                forceChartRedraw();
+                setTimeout(() => {
+                    generateOptimizedPrintVersion();
+                }, 500);
+            }, 1000);
+            
+            function forceChartRedraw() {
+                console.log('Forcing chart redraw...');
+                
+                // Force all charts to redraw
+                const charts = document.querySelectorAll('canvas');
+                charts.forEach((canvas, index) => {
+                    if (canvas.getContext) {
+                        const ctx = canvas.getContext('2d');
+                        // Trigger a small redraw
+                        ctx.save();
+                        ctx.restore();
+                        console.log(`Forced redraw for chart ${index + 1}`);
+                    }
+                });
+            }
+            
+            function generateOptimizedPrintVersion() {
+                console.log('Generating optimized print version...');
+                
+                // Create a print-optimized version of the page
+                const originalElement = document.querySelector('.report-container');
+                const printElement = originalElement.cloneNode(true);
+                
+                // Remove unwanted elements
+                const elementsToRemove = printElement.querySelectorAll('.footer-actions, .recommendations-section, .modal-backdrop');
+                elementsToRemove.forEach(el => el.remove());
+                
+                // Convert charts to static images for better PDF rendering
+                const chartContainers = printElement.querySelectorAll('.chart-container');
+                chartContainers.forEach((container, index) => {
+                    const canvas = container.querySelector('canvas');
+                    if (canvas) {
+                        try {
+                            // Convert canvas to data URL
+                            const dataURL = canvas.toDataURL('image/png', 1.0);
+                            
+                            // Create image element
+                            const img = document.createElement('img');
+                            img.src = dataURL;
+                            img.style.cssText = `
+                                width: 100% !important;
+                                height: auto !important;
+                                max-width: 600px !important;
+                                display: block !important;
+                                margin: 20px auto !important;
+                                border: 1px solid #e2e8f0 !important;
+                                border-radius: 8px !important;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+                            `;
+                            
+                            // Replace canvas with image
+                            container.innerHTML = '';
+                            container.appendChild(img);
+                            container.style.cssText = `
+                                height: auto !important;
+                                min-height: auto !important;
+                                overflow: visible !important;
+                                display: block !important;
+                                visibility: visible !important;
+                                page-break-inside: avoid !important;
+                                margin-bottom: 30px !important;
+                                text-align: center !important;
+                            `;
+                            
+                            console.log(`Chart ${index + 1} converted to image`);
+                        } catch (error) {
+                            console.error(`Failed to convert chart ${index + 1}:`, error);
+                            // Fallback: ensure chart container is visible
+                            container.style.cssText = `
+                                height: 200px !important;
+                                min-height: 200px !important;
+                                overflow: visible !important;
+                                display: block !important;
+                                visibility: visible !important;
+                                page-break-inside: avoid !important;
+                                margin-bottom: 20px !important;
+                                border: 1px solid #e2e8f0 !important;
+                                background: #f8fafc !important;
+                                text-align: center !important;
+                                line-height: 200px !important;
+                            `;
+                            container.innerHTML = '<span style="color: #64748b;">Chart data available</span>';
+                        }
+                    }
+                });
+                
+                // Optimize metric cards for PDF (make them smaller and more compact)
+                const metricCards = printElement.querySelectorAll('.metric-card');
+                metricCards.forEach(card => {
+                    card.style.cssText = `
+                        page-break-inside: avoid !important;
+                        margin-bottom: 15px !important;
+                        border: 1px solid #e2e8f0 !important;
+                        padding: 12px !important;
+                        background: white !important;
+                        border-radius: 6px !important;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                        max-width: 300px !important;
+                        display: inline-block !important;
+                        vertical-align: top !important;
+                        margin-right: 15px !important;
+                    `;
+                });
+                
+                // Optimize executive summary for PDF
+                const executiveSummary = printElement.querySelectorAll('.executive-summary');
+                executiveSummary.forEach(summary => {
+                    summary.style.cssText = `
+                        page-break-inside: avoid !important;
+                        margin-bottom: 25px !important;
+                        background: #f8fafc !important;
+                        border: 1px solid #e2e8f0 !important;
+                        padding: 20px !important;
+                        border-radius: 8px !important;
+                    `;
+                });
+                
+                // Optimize report header for PDF
+                const reportHeader = printElement.querySelector('.report-header');
+                if (reportHeader) {
+                    reportHeader.style.cssText = `
+                        background: #667eea !important;
+                        color: white !important;
+                        padding: 25px !important;
+                        border-radius: 8px !important;
+                        margin-bottom: 25px !important;
+                        text-align: center !important;
+                        -webkit-print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                    `;
+                }
+                
+                // Add print-specific CSS to the head
+                const printStyle = document.createElement('style');
+                printStyle.id = 'print-pdf-style';
+                printStyle.textContent = `
+                    @media print {
+                        body { 
+                            margin: 0 !important; 
+                            padding: 15px !important;
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                            background: white !important;
+                            font-size: 11px !important;
+                        }
+                        
+                        .report-container {
+                            background: white !important;
+                            color: black !important;
+                            box-shadow: none !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            max-width: none !important;
+                        }
+                        
+                        .report-header {
+                            background: #667eea !important;
+                            color: white !important;
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                            margin-bottom: 20px !important;
+                        }
+                        
+                        .chart-container { 
+                            height: auto !important; 
+                            page-break-inside: avoid !important;
+                            margin-bottom: 25px !important;
+                            text-align: center !important;
+                        }
+                        
+                        .chart-container img {
+                            max-width: 500px !important;
+                            height: auto !important;
+                            margin: 0 auto !important;
+                        }
+                        
+                        .metric-card {
+                            page-break-inside: avoid !important;
+                            margin-bottom: 12px !important;
+                            margin-right: 10px !important;
+                            max-width: 280px !important;
+                            display: inline-block !important;
+                            vertical-align: top !important;
+                            font-size: 10px !important;
+                            padding: 10px !important;
+                        }
+                        
+                        .executive-summary {
+                            page-break-inside: avoid !important;
+                            margin-bottom: 20px !important;
+                            padding: 15px !important;
+                        }
+                        
+                        .footer-actions, .recommendations-section, .modal-backdrop {
+                            display: none !important;
+                        }
+                        
+                        * {
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                        }
+                        
+                        /* Ensure proper page breaks */
+                        .metric-card:nth-child(3n) {
+                            margin-right: 0 !important;
+                        }
+                        
+                        /* Compact layout for PDF */
+                        .report-meta {
+                            gap: 15px !important;
+                        }
+                        
+                        .meta-item {
+                            padding: 6px 12px !important;
+                            font-size: 10px !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(printStyle);
+                
+                // Temporarily replace the content
+                const originalParent = originalElement.parentNode;
+                originalParent.insertBefore(printElement, originalElement);
+                originalElement.style.display = 'none';
+                
+                // Wait a moment for styles to apply, then print
+                setTimeout(() => {
+                    try {
+                        console.log('Initiating browser print...');
+                        window.print();
+                        
+                        // Clean up after printing
+                        setTimeout(() => {
+                            // Restore original content
+                            originalParent.removeChild(printElement);
+                            originalElement.style.display = 'block';
+                            
+                            // Remove print styles
+                            const printStyleElement = document.getElementById('print-pdf-style');
+                            if (printStyleElement) {
+                                printStyleElement.remove();
+                            }
+                            
+                            // Restore button
+                            downloadBtn.innerHTML = originalText;
+                            downloadBtn.disabled = false;
+                            
+                            console.log('Print to PDF completed successfully!');
+                        }, 1000);
+                        
+                    } catch (printError) {
+                        console.error('Print failed:', printError);
+                        
+                        // Clean up on error
+                        originalParent.removeChild(printElement);
+                        originalElement.style.display = 'block';
+                        
+                        const printStyleElement = document.getElementById('print-pdf-style');
+                        if (printStyleElement) {
+                            printStyleElement.remove();
+                        }
+                        
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                        
+                        alert('Print failed. Please try manually: Ctrl+P (or Cmd+P) and select "Save as PDF"');
+                    }
+                }, 500);
+            }
+        }
+        
+        // Show manual PDF instructions
+        function showManualInstructions() {
+            const instructions = `
+🔴 **MANUAL PDF GENERATION** (Most Reliable Method)
+
+**Step 1: Prepare the Page**
+- Click "Print Report" button first to optimize the page for printing
+- This removes unwanted elements and optimizes charts
+
+**Step 2: Use Browser Print**
+- Press Ctrl+P (Windows/Linux) or Cmd+P (Mac)
+- OR right-click and select "Print"
+
+**Step 3: Save as PDF**
+- In the print dialog, change destination to "Save as PDF"
+- Select "More settings" and ensure:
+  • Margins: Minimum
+  • Scale: Default (100%)
+  • Options: Background graphics ✓
+
+**Step 4: Generate PDF**
+- Click "Save" and choose your filename
+- The PDF will be saved to your Downloads folder
+
+**Why This Works:**
+✅ Uses browser's built-in PDF engine
+✅ No external library dependencies
+✅ Handles charts and images properly
+✅ Maintains all formatting and colors
+✅ Works in all modern browsers
+
+**Alternative:**
+If the above doesn't work, try the "Print to PDF" button which automates this process.
+            `;
+            
+            alert(instructions);
+        }
+        
+        // Comprehensive PDF debugging function
+        function debugPDFGeneration() {
+            console.log('=== PDF GENERATION DEBUG ===');
+            
+            // Check page structure
+            const container = document.querySelector('.report-container');
+            console.log('Report container:', {
+                exists: !!container,
+                width: container?.offsetWidth,
+                height: container?.offsetHeight,
+                children: container?.children?.length
+            });
+            
+            // Check charts
+            const charts = document.querySelectorAll('.chart-container');
+            console.log('Chart containers:', charts.length);
+            charts.forEach((chart, index) => {
+                const canvas = chart.querySelector('canvas');
+                const img = chart.querySelector('img');
+                console.log(`Chart ${index + 1}:`, {
+                    width: chart.offsetWidth,
+                    height: chart.offsetHeight,
+                    hasCanvas: !!canvas,
+                    hasImage: !!img,
+                    canvasWidth: canvas?.width,
+                    canvasHeight: canvas?.height,
+                    imageSrc: img?.src?.substring(0, 50) + '...'
+                });
+            });
+            
+            // Check metric cards
+            const metricCards = document.querySelectorAll('.metric-card');
+            console.log('Metric cards:', metricCards.length);
+            metricCards.forEach((card, index) => {
+                console.log(`Metric card ${index + 1}:`, {
+                    width: card.offsetWidth,
+                    height: card.offsetHeight,
+                    textContent: card.textContent?.substring(0, 50) + '...'
+                });
+            });
+            
+            // Check for any hidden elements
+            const hiddenElements = document.querySelectorAll('[style*="display: none"], [style*="visibility: hidden"]');
+            console.log('Hidden elements:', hiddenElements.length);
+            
+            // Test chart conversion
+            console.log('Testing chart conversion...');
+            const testCanvas = document.querySelector('canvas');
+            if (testCanvas) {
+                try {
+                    const dataURL = testCanvas.toDataURL('image/png', 1.0);
+                    console.log('Chart conversion test:', {
+                        success: true,
+                        dataURLLength: dataURL.length,
+                        startsWithData: dataURL.startsWith('data:image/png;base64,')
+                    });
+                } catch (error) {
+                    console.error('Chart conversion test failed:', error);
+                }
+            }
+            
+            // Check print styles
+            const printStyles = document.querySelectorAll('style');
+            console.log('Print styles found:', printStyles.length);
+            
+            console.log('=== END DEBUG ===');
+        }
+        
+        // Simple PDF Export - Basic but reliable
+        function simplePDFExport() {
+            console.log('Starting simple PDF export...');
+            
+            // Show loading state
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<span class="material-icons">sync</span> Creating Simple PDF...';
+            downloadBtn.disabled = true;
+            
+            try {
+                // Create a simple, clean version for PDF
+                const originalElement = document.querySelector('.report-container');
+                const simpleElement = originalElement.cloneNode(true);
+                
+                // Remove unwanted elements
+                const elementsToRemove = simpleElement.querySelectorAll('.footer-actions, .recommendations-section, .modal-backdrop');
+                elementsToRemove.forEach(el => el.remove());
+                
+                // Fix charts - convert canvas to images for PDF with better debugging
+                const chartContainers = simpleElement.querySelectorAll('.chart-container');
+                console.log(`Found ${chartContainers.length} chart containers`);
+                
+                chartContainers.forEach((container, index) => {
+                    console.log(`Processing chart container ${index + 1}:`, container);
+                    
+                    // Check if container has canvas or if it was replaced with "no data" message
+                    const canvas = container.querySelector('canvas');
+                    const noDataMessage = container.querySelector('div[style*="text-align: center"]');
+                    
+                    console.log(`Chart ${index + 1} analysis:`, {
+                        hasCanvas: !!canvas,
+                        hasNoDataMessage: !!noDataMessage,
+                        canvasWidth: canvas?.width,
+                        canvasHeight: canvas?.height,
+                        containerHTML: container.innerHTML.substring(0, 100) + '...'
+                    });
+                    
+                    if (canvas && canvas.width > 0 && canvas.height > 0) {
+                        // Real chart exists, convert it
+                        try {
+                            console.log(`Converting real chart ${index + 1}...`);
+                            const dataURL = canvas.toDataURL('image/png', 1.0);
+                            
+                            if (dataURL && dataURL.length > 100) {
+                                const img = document.createElement('img');
+                                img.src = dataURL;
+                                img.style.cssText = `
+                                    width: 100% !important;
+                                    height: auto !important;
+                                    max-width: 600px !important;
+                                    display: block !important;
+                                    margin: 20px auto !important;
+                                    border: 1px solid #e2e8f0 !important;
+                                    border-radius: 8px !important;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+                                `;
+                                
+                                container.innerHTML = '';
+                                container.appendChild(img);
+                                console.log(`Chart ${index + 1} converted successfully`);
+                            } else {
+                                throw new Error('DataURL too short');
+                            }
+                        } catch (error) {
+                            console.error(`Chart conversion failed for ${index + 1}:`, error);
+                            createChartPlaceholder(container, index + 1, 'Chart conversion failed');
+                        }
+                    } else if (noDataMessage) {
+                        // Container has "no data" message, create informative placeholder
+                        console.log(`Chart ${index + 1} has no data message, creating placeholder`);
+                        createChartPlaceholder(container, index + 1, 'No chart data available');
+                    } else {
+                        // Neither canvas nor message, create generic placeholder
+                        console.log(`Chart ${index + 1} has no content, creating generic placeholder`);
+                        createChartPlaceholder(container, index + 1, 'Chart not available');
+                    }
+                    
+                    // Ensure container is properly styled for PDF
+                    container.style.cssText = `
+                        height: auto !important;
+                        min-height: auto !important;
+                        overflow: visible !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        page-break-inside: avoid !important;
+                        margin-bottom: 30px !important;
+                        text-align: center !important;
+                    `;
+                });
+                
+                // Helper function to create chart placeholders
+                function createChartPlaceholder(container, chartNumber, message = 'Chart data available') {
+                    container.innerHTML = `
+                        <div style="
+                            border: 2px solid #e2e8f0;
+                            border-radius: 8px;
+                            padding: 20px;
+                            margin: 20px 0;
+                            background: #f8fafc;
+                            text-align: center;
+                            font-family: Arial, sans-serif;
+                            height: 200px;
+                            line-height: 160px;
+                        ">
+                            <h3 style="color: #1e40af; margin: 0;">Chart ${chartNumber}</h3>
+                            <p style="color: #64748b; font-size: 14px;">${message}</p>
+                        </div>
+                    `;
+                }
+                
+                // Alternative: Try to capture charts even if not fully rendered
+                console.log('Attempting alternative chart capture...');
+                chartContainers.forEach((container, index) => {
+                    const canvas = container.querySelector('canvas');
+                    if (canvas) {
+                        // Try to capture whatever is on the canvas, even if incomplete
+                        try {
+                            const ctx = canvas.getContext('2d');
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            
+                            // Check if canvas has any content
+                            let hasContent = false;
+                            for (let i = 0; i < imageData.data.length; i += 4) {
+                                if (imageData.data[i + 3] > 0) { // Alpha channel > 0
+                                    hasContent = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (hasContent) {
+                                console.log(`Chart ${index + 1} has content, attempting capture...`);
+                                const dataURL = canvas.toDataURL('image/png', 0.8);
+                                if (dataURL && dataURL.length > 100) {
+                                    const img = document.createElement('img');
+                                    img.src = dataURL;
+                                    img.style.cssText = `
+                                        width: 100% !important;
+                                        height: auto !important;
+                                        max-width: 600px !important;
+                                        display: block !important;
+                                        margin: 20px auto !important;
+                                        border: 1px solid #e2e8f0 !important;
+                                        border-radius: 8px !important;
+                                        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+                                    `;
+                                    
+                                    container.innerHTML = '';
+                                    container.appendChild(img);
+                                    console.log(`Chart ${index + 1} captured with alternative method`);
+                                }
+                            }
+                        } catch (altError) {
+                            console.log(`Alternative capture failed for chart ${index + 1}:`, altError);
+                        }
+                    }
+                });
+                
+                // Fix metric cards - ensure proper grid layout
+                const metricCards = simpleElement.querySelectorAll('.metric-card');
+                metricCards.forEach((card, index) => {
+                    card.style.cssText = `
+                        page-break-inside: avoid !important;
+                        margin-bottom: 15px !important;
+                        margin-right: 15px !important;
+                        border: 1px solid #e2e8f0 !important;
+                        padding: 15px !important;
+                        background: white !important;
+                        border-radius: 6px !important;
+                        width: 280px !important;
+                        max-width: 280px !important;
+                        display: inline-block !important;
+                        vertical-align: top !important;
+                        font-size: 12px !important;
+                        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+                        float: left !important;
+                    `;
+                    
+                    // Force new row every 3 cards
+                    if ((index + 1) % 3 === 0) {
+                        card.style.marginRight = '0 !important';
+                        card.style.clear = 'both !important';
+                    }
+                });
+                
+                // Add a clearfix to ensure proper grid layout
+                const metricCardsContainer = simpleElement.querySelector('.metric-cards-section, .metrics-section, .overview-stats');
+                if (metricCardsContainer) {
+                    metricCardsContainer.style.cssText = `
+                        overflow: hidden !important;
+                        width: 100% !important;
+                        margin-bottom: 20px !important;
+                    `;
+                }
+                
+                // Simplify executive summary
+                const executiveSummary = simpleElement.querySelectorAll('.executive-summary');
+                executiveSummary.forEach(summary => {
+                    summary.style.cssText = `
+                        page-break-inside: avoid !important;
+                        margin-bottom: 25px !important;
+                        background: #f8fafc !important;
+                        border: 1px solid #e2e8f0 !important;
+                        padding: 20px !important;
+                        border-radius: 8px !important;
+                    `;
+                });
+                
+                // Simplify report header
+                const reportHeader = simpleElement.querySelector('.report-header');
+                if (reportHeader) {
+                    reportHeader.style.cssText = `
+                        background: #667eea !important;
+                        color: white !important;
+                        padding: 25px !important;
+                        border-radius: 8px !important;
+                        margin-bottom: 25px !important;
+                        text-align: center !important;
+                        -webkit-print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                    `;
+                }
+                
+                // Add simple print styles
+                const simplePrintStyle = document.createElement('style');
+                simplePrintStyle.id = 'simple-pdf-style';
+                simplePrintStyle.textContent = `
+                    @media print {
+                        body { 
+                            margin: 0 !important; 
+                            padding: 15px !important;
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                            background: white !important;
+                            font-size: 12px !important;
+                            font-family: Arial, sans-serif !important;
+                        }
+                        
+                        .report-container {
+                            background: white !important;
+                            color: black !important;
+                            box-shadow: none !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            max-width: none !important;
+                        }
+                        
+                        .report-header {
+                            background: #667eea !important;
+                            color: white !important;
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                            margin-bottom: 20px !important;
+                        }
+                        
+                        .chart-container { 
+                            page-break-inside: avoid !important;
+                            margin-bottom: 20px !important;
+                        }
+                        
+                        .metric-card {
+                            page-break-inside: avoid !important;
+                            margin-bottom: 12px !important;
+                            margin-right: 10px !important;
+                            width: 280px !important;
+                            max-width: 280px !important;
+                            display: inline-block !important;
+                            vertical-align: top !important;
+                            font-size: 11px !important;
+                            padding: 12px !important;
+                            float: left !important;
+                        }
+                        
+                        .metric-card:nth-child(3n) {
+                            margin-right: 0 !important;
+                            clear: both !important;
+                        }
+                        
+                        .executive-summary {
+                            page-break-inside: avoid !important;
+                            margin-bottom: 20px !important;
+                            padding: 15px !important;
+                        }
+                        
+                        .footer-actions, .recommendations-section, .modal-backdrop {
+                            display: none !important;
+                        }
+                        
+                        * {
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                        }
+                        
+                        /* Ensure proper grid layout */
+                        .metric-cards-section, .metrics-section, .overview-stats {
+                            overflow: hidden !important;
+                            width: 100% !important;
+                            margin-bottom: 20px !important;
+                        }
+                        
+                        /* Chart images in PDF */
+                        .chart-container img {
+                            max-width: 500px !important;
+                            height: auto !important;
+                            margin: 0 auto !important;
+                            display: block !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(simplePrintStyle);
+                
+                // Temporarily replace content
+                const originalParent = originalElement.parentNode;
+                originalParent.insertBefore(simpleElement, originalElement);
+                originalElement.style.display = 'none';
+                
+                // Wait for styles to apply, then print
+                setTimeout(() => {
+                    try {
+                        console.log('Initiating simple PDF print...');
+                        window.print();
+                        
+                        // Clean up after printing
+                        setTimeout(() => {
+                            // Restore original content
+                            originalParent.removeChild(simpleElement);
+                            originalElement.style.display = 'block';
+                            
+                            // Remove print styles
+                            const styleElement = document.getElementById('simple-pdf-style');
+                            if (styleElement) {
+                                styleElement.remove();
+                            }
+                            
+                            // Restore button
+                            downloadBtn.innerHTML = originalText;
+                            downloadBtn.disabled = false;
+                            
+                            console.log('Simple PDF export completed!');
+                        }, 1000);
+                        
+                    } catch (printError) {
+                        console.error('Simple PDF export failed:', printError);
+                        
+                        // Clean up on error
+                        originalParent.removeChild(simpleElement);
+                        originalElement.style.display = 'block';
+                        
+                        const styleElement = document.getElementById('simple-pdf-style');
+                        if (styleElement) {
+                            styleElement.remove();
+                        }
+                        
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                        
+                        alert('Simple PDF export failed. Please try the manual method.');
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('Simple PDF export error:', error);
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+                alert('Simple PDF export error: ' + error.message);
+            }
+        }
+        
+        // Data-Based PDF - Extract raw data and create simple charts
+        function dataBasedPDF() {
+            console.log('Starting Data-Based PDF...');
+            
+            // Show loading state
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<span class="material-icons">sync</span> Creating Data PDF...';
+            downloadBtn.disabled = true;
+            
+            try {
+                // Create a completely new, simple version for PDF
+                const originalElement = document.querySelector('.report-container');
+                const dataElement = originalElement.cloneNode(true);
+                
+                // Remove unwanted elements
+                const elementsToRemove = dataElement.querySelectorAll('.footer-actions, .recommendations-section, .modal-backdrop');
+                elementsToRemove.forEach(el => el.remove());
+                
+                // Replace all chart containers with data tables
+                const chartContainers = dataElement.querySelectorAll('.chart-container');
+                chartContainers.forEach((container, index) => {
+                    console.log(`Processing chart container ${index + 1} for data extraction`);
+                    
+                    // Get the chart title from the section
+                    const sectionTitle = container.closest('.chart-section')?.querySelector('h3')?.textContent || `Chart ${index + 1}`;
+                    
+                    // Create a data table based on the chart type
+                    let dataTable = '';
+                    
+                    if (index === 0) {
+                        // Workload Distribution - create table from workload categories
+                        const workloadCategories = dataElement.querySelectorAll('.workload-category');
+                        if (workloadCategories.length > 0) {
+                            dataTable = `
+                                <div style="
+                                    border: 2px solid #e2e8f0;
+                                    border-radius: 8px;
+                                    padding: 20px;
+                                    margin: 20px 0;
+                                    background: #f8fafc;
+                                    font-family: Arial, sans-serif;
+                                ">
+                                    <h3 style="color: #1e40af; margin: 0 0 15px 0; text-align: center;">${sectionTitle}</h3>
+                                    <table style="width: 100%; border-collapse: collapse; margin: 0 auto;">
+                                        <thead>
+                                            <tr style="background: #e2e8f0;">
+                                                <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: left;">Category</th>
+                                                <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">Count</th>
+                                                <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">Percentage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            `;
+                            
+                            let totalCount = 0;
+                            workloadCategories.forEach(category => {
+                                const count = parseInt(category.querySelector('.category-count')?.textContent || '0');
+                                totalCount += count;
+                            });
+                            
+                            workloadCategories.forEach(category => {
+                                const label = category.querySelector('.category-label')?.textContent || 'Unknown';
+                                const count = parseInt(category.querySelector('.category-count')?.textContent || '0');
+                                const percentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : '0.0';
+                                
+                                dataTable += `
+                                    <tr style="background: white;">
+                                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${label}</td>
+                                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${count}</td>
+                                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">${percentage}%</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            dataTable += `
+                                        </tbody>
+                                    </table>
+                                    <p style="text-align: center; margin-top: 15px; color: #64748b; font-size: 12px;">
+                                        Total Members: ${totalCount}
+                                    </p>
+                                </div>
+                            `;
+                        }
+                    } else if (index === 1) {
+                        // Member Workload - create table from member data
+                        const memberData = {{ pulse_data.member_workloads | tojson if pulse_data.member_workloads else '[]' }} || [];
+                        if (memberData && Array.isArray(memberData) && memberData.length > 0) {
+                            dataTable = `
+                                <div style="
+                                    border: 2px solid #e2e8f0;
+                                    border-radius: 8px;
+                                    padding: 20px;
+                                    margin: 20px 0;
+                                    background: #f8fafc;
+                                    font-family: Arial, sans-serif;
+                                ">
+                                    <h3 style="color: #1e40af; margin: 0 0 15px 0; text-align: center;">${sectionTitle}</h3>
+                                    <table style="width: 100%; border-collapse: collapse; margin: 0 auto;">
+                                        <thead>
+                                            <tr style="background: #e2e8f0;">
+                                                <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: left;">Member</th>
+                                                <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">Workload Score</th>
+                                                <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            `;
+                            
+                            memberData.forEach(member => {
+                                const name = member.member_name || 'Unknown';
+                                const score = member.workload_score || 0;
+                                let status = 'Light';
+                                let statusColor = '#10b981';
+                                
+                                if (score >= 150) {
+                                    status = 'Overloaded';
+                                    statusColor = '#dc2626';
+                                } else if (score >= 100) {
+                                    status = 'High';
+                                    statusColor = '#ef4444';
+                                } else if (score >= 50) {
+                                    status = 'Balanced';
+                                    statusColor = '#f59e0b';
+                                }
+                                
+                                dataTable += `
+                                    <tr style="background: white;">
+                                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${name}</td>
+                                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${score}</td>
+                                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; color: ${statusColor}; font-weight: bold;">${status}</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            dataTable += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        // Project Performance - create summary table
+                        const projectPerformance = {{ pulse_data.project_performance | tojson if pulse_data.project_performance else '{}' }} || {};
+                        dataTable = `
+                            <div style="
+                                border: 2px solid #e2e8f0;
+                                border-radius: 8px;
+                                padding: 20px;
+                                margin: 20px 0;
+                                background: #f8fafc;
+                                font-family: Arial, sans-serif;
+                            ">
+                                <h3 style="color: #1e40af; margin: 0 0 15px 0; text-align: center;">${sectionTitle}</h3>
+                                <table style="width: 100%; border-collapse: collapse; margin: 0 auto;">
+                                    <tbody>
+                                        <tr style="background: white;">
+                                            <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold;">Projects On Track</td>
+                                            <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; color: #10b981; font-weight: bold;">${projectPerformance.projects_on_track || 0}</td>
+                                        </tr>
+                                        <tr style="background: #f8fafc;">
+                                            <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold;">Projects Delayed</td>
+                                            <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; color: #ef4444; font-weight: bold;">${projectPerformance.projects_delayed || 0}</td>
+                                        </tr>
+                                        <tr style="background: white;">
+                                            <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold;">Average Delay (Days)</td>
+                                            <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${projectPerformance.avg_delay_days ? projectPerformance.avg_delay_days.toFixed(1) : '0.0'}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+                    
+                    // Replace the chart container with the data table
+                    container.innerHTML = dataTable;
+                    container.style.cssText = `
+                        height: auto !important;
+                        min-height: auto !important;
+                        overflow: visible !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        page-break-inside: avoid !important;
+                        margin-bottom: 30px !important;
+                        text-align: center !important;
+                    `;
+                });
+                
+                // Fix metric cards - ensure proper 4-column grid layout
+                const metricCards = dataElement.querySelectorAll('.metric-card');
+                console.log(`Found ${metricCards.length} metric cards`);
+                
+                // Completely replace the metrics-grid container with a new one
+                const metricsGrid = dataElement.querySelector('.metrics-grid');
+                if (metricsGrid) {
+                    console.log('Found metrics-grid, replacing with new container');
+                    
+                    // Create a new container
+                    const newContainer = document.createElement('div');
+                    newContainer.className = 'metrics-row';
+                    newContainer.style.cssText = `
+                        width: 100% !important;
+                        margin-bottom: 20px !important;
+                        overflow: hidden !important;
+                        display: block !important;
+                    `;
+                    
+                    // Move all metric cards to the new container
+                    const metricCards = Array.from(metricsGrid.querySelectorAll('.metric-card'));
+                    metricCards.forEach((card, index) => {
+                        // Clone the card to avoid DOM conflicts
+                        const newCard = card.cloneNode(true);
+                        
+                        // Apply new styling
+                        const cardWidth = '20%'; // 4 cards per row
+                        newCard.style.cssText = `
+                            page-break-inside: avoid !important;
+                            margin-bottom: 15px !important;
+                            margin-right: 5% !important;
+                            border: 1px solid #e2e8f0 !important;
+                            padding: 12px !important;
+                            background: white !important;
+                            border-radius: 6px !important;
+                            width: ${cardWidth} !important;
+                            max-width: ${cardWidth} !important;
+                            display: inline-block !important;
+                            vertical-align: top !important;
+                            font-size: 10px !important;
+                            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+                            float: left !important;
+                            box-sizing: border-box !important;
+                        `;
+                        
+                        // Force new row every 4 cards
+                        if ((index + 1) % 4 === 0) {
+                            newCard.style.marginRight = '0 !important';
+                            newCard.style.clear = 'both !important';
+                        }
+                        
+                        newContainer.appendChild(newCard);
+                    });
+                    
+                    // Replace the old container
+                    metricsGrid.parentNode.replaceChild(newContainer, metricsGrid);
+                    console.log(`Replaced metrics-grid with new container containing ${metricCards.length} cards`);
+                }
+                
+                // Add proper container styling for 4-column grid
+                const metricCardsContainer = dataElement.querySelector('.metric-cards-section, .metrics-section, .overview-stats, .overview-metrics');
+                if (metricCardsContainer) {
+                    metricCardsContainer.style.cssText = `
+                        overflow: hidden !important;
+                        width: 100% !important;
+                        margin-bottom: 20px !important;
+                        display: block !important;
+                    `;
+                }
+                
+                // Also check for any parent containers that might need grid styling
+                const parentContainers = dataElement.querySelectorAll('.report-container, .metrics-grid, .overview-section');
+                parentContainers.forEach(container => {
+                    if (container.querySelector('.metric-card')) {
+                        container.style.cssText += `
+                            width: 100% !important;
+                            max-width: none !important;
+                        `;
+                    }
+                });
+                
+                // Add print styles
+                const dataPrintStyle = document.createElement('style');
+                dataPrintStyle.id = 'data-pdf-style';
+                dataPrintStyle.textContent = `
+                    @media print {
+                        body { 
+                            margin: 0 !important; 
+                            padding: 15px !important;
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                            background: white !important;
+                            font-size: 12px !important;
+                            font-family: Arial, sans-serif !important;
+                        }
+                        
+                        .report-container {
+                            background: white !important;
+                            color: black !important;
+                            box-shadow: none !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            max-width: none !important;
+                        }
+                        
+                        .report-header {
+                            background: #667eea !important;
+                            color: white !important;
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                            margin-bottom: 20px !important;
+                        }
+                        
+                        .chart-container { 
+                            page-break-inside: avoid !important;
+                            margin-bottom: 20px !important;
+                        }
+                        
+                        .metric-card {
+                            page-break-inside: avoid !important;
+                            margin-bottom: 12px !important;
+                            margin-right: 15% !important;
+                            width: 10% !important;
+                            max-width: 10% !important;
+                            display: inline-block !important;
+                            vertical-align: top !important;
+                            font-size: 8px !important;
+                            padding: 8px !important;
+                            float: left !important;
+                            box-sizing: border-box !important;
+                        }
+                        
+                        .metric-card:nth-child(4n) {
+                            margin-right: 0 !important;
+                            clear: both !important;
+                        }
+                        
+                        /* New metrics row container */
+                        .metrics-row {
+                            width: 100% !important;
+                            margin-bottom: 20px !important;
+                            overflow: hidden !important;
+                            display: block !important;
+                        }
+                        
+                        /* Ensure proper grid container */
+                        .metric-cards-section, .metrics-section, .overview-stats, .overview-metrics {
+                            overflow: hidden !important;
+                            width: 100% !important;
+                            margin-bottom: 20px !important;
+                        }
+                        
+                        table {
+                            page-break-inside: avoid !important;
+                        }
+                        
+                        * {
+                            -webkit-print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(dataPrintStyle);
+                
+                // Temporarily replace content
+                const originalParent = originalElement.parentNode;
+                originalParent.insertBefore(dataElement, originalElement);
+                originalElement.style.display = 'none';
+                
+                // Wait for styles to apply, then print
+                setTimeout(() => {
+                    try {
+                        console.log('Initiating Data-Based PDF print...');
+                        window.print();
+                        
+                        // Clean up after printing
+                        setTimeout(() => {
+                            // Restore original content
+                            originalParent.removeChild(dataElement);
+                            originalElement.style.display = 'block';
+                            
+                            // Remove print styles
+                            const styleElement = document.getElementById('data-pdf-style');
+                            if (styleElement) {
+                                styleElement.remove();
+                            }
+                            
+                            // Restore button
+                            downloadBtn.innerHTML = originalText;
+                            downloadBtn.disabled = false;
+                            
+                            console.log('Data-Based PDF completed!');
+                        }, 1000);
+                        
+                    } catch (printError) {
+                        console.error('Data-Based PDF failed:', printError);
+                        
+                        // Clean up on error
+                        originalParent.removeChild(dataElement);
+                        originalElement.style.display = 'block';
+                        
+                        const styleElement = document.getElementById('data-pdf-style');
+                        if (styleElement) {
+                            styleElement.remove();
+                        }
+                        
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                        
+                        alert('Data-Based PDF failed. Please try the manual method.');
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('Data-Based PDF error:', error);
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+                alert('Data-Based PDF error: ' + error.message);
+            }
+        }
+        
+        // Enhanced download function with fallback
+        function downloadPDFEnhanced() {
+            // Try the main method first
+            try {
+                downloadPDF();
+            } catch (error) {
+                console.log('Main PDF method failed, trying alternative...');
+                downloadPDFAlternative();
+            }
+        }
+        
+        // Debug function to help troubleshoot PDF generation
+        function debugPDFGeneration() {
+            console.log('=== PDF Generation Debug ===');
+            
+            // Check if html2pdf is loaded
+            console.log('html2pdf loaded:', typeof html2pdf !== 'undefined');
+            
+            // Check the report container
+            const container = document.querySelector('.report-container');
+            console.log('Report container found:', !!container);
+            if (container) {
+                console.log('Container dimensions:', {
+                    width: container.offsetWidth,
+                    height: container.offsetHeight,
+                    scrollHeight: container.scrollHeight
+                });
+                console.log('Container styles:', {
+                    display: container.style.display,
+                    visibility: container.style.visibility,
+                    position: container.style.position
+                });
+            }
+            
+            // Check charts
+            const charts = document.querySelectorAll('.chart-container');
+            console.log('Chart containers found:', charts.length);
+            charts.forEach((chart, index) => {
+                console.log(`Chart ${index + 1}:`, {
+                    width: chart.offsetWidth,
+                    height: chart.offsetHeight,
+                    display: chart.style.display,
+                    visibility: chart.style.visibility
+                });
+            });
+            
+            // Check text content
+            const textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
+            console.log('Text elements found:', textElements.length);
+            
+            // Check for any hidden elements
+            const hiddenElements = document.querySelectorAll('[style*="display: none"], [style*="visibility: hidden"]');
+            console.log('Hidden elements found:', hiddenElements.length);
+            
+            // Test html2pdf if available
+            if (typeof html2pdf !== 'undefined') {
+                console.log('html2pdf version:', html2pdf.version);
+                console.log('html2pdf methods:', Object.getOwnPropertyNames(html2pdf));
+            }
+            
+            console.log('=== End Debug ===');
+        }
+        
+        // Test function to generate a simple PDF
+        function testSimplePDF() {
+            console.log('Testing simple PDF generation...');
+            
+            // Create a simple test element
+            const testElement = document.createElement('div');
+            testElement.innerHTML = `
+                <h1>Test PDF Generation</h1>
+                <p>This is a test to see if PDF generation works at all.</p>
+                <p>Current time: ${new Date().toLocaleString()}</p>
+                <p>If you can see this PDF, the basic functionality works.</p>
+            `;
+            testElement.style.cssText = `
+                background: white;
+                color: black;
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                width: 600px;
+            `;
+            
+            // Try to generate PDF
+            if (typeof html2pdf !== 'undefined') {
+                console.log('html2pdf is available, testing...');
+                html2pdf()
+                    .set({
+                        margin: 10,
+                        filename: 'test-pdf.pdf',
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    })
+                    .from(testElement)
+                    .save()
+                    .then(() => {
+                        console.log('Test PDF generated successfully!');
+                        alert('Test PDF generated successfully! Check your downloads.');
+                    })
+                    .catch(err => {
+                        console.error('Test PDF generation failed:', err);
+                        alert('Test PDF generation failed: ' + err.message);
+                    });
+            } else {
+                console.log('html2pdf not available, loading...');
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                script.onload = function() {
+                    console.log('html2pdf loaded, testing...');
+                    testSimplePDF(); // Retry
+                };
+                script.onerror = function() {
+                    console.error('Failed to load html2pdf');
+                    alert('Failed to load html2pdf library');
+                };
+                document.head.appendChild(script);
+            }
+        }
+    </script>
+</body>
+</html>
